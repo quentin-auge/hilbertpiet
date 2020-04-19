@@ -1,0 +1,20 @@
+[run]
+
+branch = True
+
+omit =
+    */__init__.py
+
+[report]
+
+sort = Cover
+
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Exclude main
+    def main
+    if __name__ == '__main__'
+
+    raise NotImplementedError
