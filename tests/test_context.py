@@ -23,32 +23,32 @@ def test_distinct_buffer():
 
 def test_repr():
     c = Context(stack=[1, 2, 3], buffer=4)
-    assert c.__repr__() == 'Context(stack = [1, 2, 3], buffer = 4)'
+    assert repr(c) == 'Context(stack = [1, 2, 3], buffer = 4)'
 
 
 def test_repr_no_stack():
     c = Context(buffer=4)
-    assert c.__repr__() == 'Context(stack = [], buffer = 4)'
+    assert repr(c) == 'Context(stack = [], buffer = 4)'
 
 
 def test_repr_no_buffer():
     c = Context(stack=[1, 2, 3])
-    assert c.__repr__() == 'Context(stack = [1, 2, 3])'
+    assert repr(c) == 'Context(stack = [1, 2, 3])'
 
 
 def test_str():
     c = Context(stack=[1, 2, 3], buffer=4)
-    assert c.__str__() == '[1, 2, 3]  4'
+    assert str(c) == '[1, 2, 3]  4'
 
 
 def test_str_no_stack():
     c = Context(buffer=4)
-    assert c.__str__() == '[]  4'
+    assert str(c) == '[]  4'
 
 
 def test_str_no_buffer():
     c = Context(stack=[1, 2, 3])
-    assert c.__str__() == '[1, 2, 3]'
+    assert str(c) == '[1, 2, 3]'
 
 
 def test_deepcopy():
