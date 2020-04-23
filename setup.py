@@ -16,7 +16,7 @@ setup(name='piet',
                    'Operating System :: Unix'],
 
       extras_require={
-          'testing': ['coverage', 'pytest', 'pytest-cov']
+          'testing': ['coverage', 'mock', 'pytest', 'pytest-cov']
       },
 
       entry_points={
