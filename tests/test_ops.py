@@ -56,17 +56,13 @@ def test_resize():
 
 
 def test_resize_null_value():
-    op = Resize(0)
-    context = Context()
-    with pytest.raises(RuntimeError, match='Invalid non-positive resize value'):
-        print(op(context))
+    with pytest.raises(ValueError, match='Invalid non-positive resize value'):
+        print(Resize(0))
 
 
 def test_resize_negative_value():
-    op = Resize(-4)
-    context = Context()
-    with pytest.raises(RuntimeError, match='Invalid non-positive resize value'):
-        print(op(context))
+    with pytest.raises(ValueError, match='Invalid non-positive resize value'):
+        print(Resize(-4))
 
 
 def test_push():

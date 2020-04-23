@@ -40,12 +40,11 @@ class Init(Op):
 
 class Resize(Op):
     def __init__(self, value: int):
+        if value <= 0:
+            raise ValueError(f'Invalid non-positive resize value {value}')
         self.value = value
 
     def _call(self, context: Context) -> Context:
-        if context.value <= 0:
-            raise RuntimeError(f'Invalid non-positive resize value {context.value}')
-
         context.value = self.value
         return context
 

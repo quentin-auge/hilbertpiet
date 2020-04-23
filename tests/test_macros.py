@@ -1,7 +1,7 @@
 from mock import MagicMock
 
 from piet.context import Context
-from piet.macros import Macro
+from piet.macros import Macro, PushVal
 from piet.ops import Op
 
 
@@ -33,3 +33,10 @@ def test_call():
     A.__call__.assert_called_with(Context(stack=[], value=0))
     B.__call__.assert_called_with(Context(stack=[1], value=1))
     C.__call__.assert_called_with(Context(stack=[1, 2], value=2))
+
+
+def test_pushval():
+    macro = PushVal(4)
+    context = Context(stack=[1, 2, 3])
+    expected_context = Context(stack=[1, 2, 3, 4], value=1)
+    assert macro(context) == expected_context
