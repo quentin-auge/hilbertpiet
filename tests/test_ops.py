@@ -1,23 +1,25 @@
 from copy import deepcopy
 
+import pytest
+
 from piet.context import Context
-from piet.ops import Add, Op
+from piet.ops import Add, Init, Op, Push, Resize
 
 
 def test_ops_purity():
     class TestOp(Op):
         def _call(self, context: Context) -> Context:
             context.stack = [18]
-            context.buffer = 32
+            context.value = 32
             return context
 
     op = TestOp()
 
-    context = Context(stack=[1, 2, 3], buffer=4)
+    context = Context(stack=[1, 2, 3], value=4)
     context1 = deepcopy(context)
     context2 = deepcopy(context)
 
-    expected_context = Context(stack=[18], buffer=32)
+    expected_context = Context(stack=[18], value=32)
 
     # `Op._call()` mutates the context
     mutated_context = op._call(context1)
@@ -32,17 +34,50 @@ def test_ops_purity():
     assert context2 == context
 
 
-def _test_op(op: Op, context: Context, expected_context: Context):
-    original_context = deepcopy(context)
-
-    # Assert operation correctness
+def test_init():
+    op = Init()
+    context = Context()
+    expected_context = Context(value=1)
     assert op(context) == expected_context
 
-    # Ensure operation purity
-    assert context == original_context
+
+def test_init_nonempty_context():
+    op = Init()
+    context = Context(stack=[1, 2, 3], value=4)
+    with pytest.raises(RuntimeError, match='Invalid non-empty context'):
+        print(op(context))
+
+
+def test_resize():
+    op = Resize(5)
+    context = Context(stack=[1, 2, 3], value=4)
+    expected_context = Context(stack=[1, 2, 3], value=5)
+    assert op(context) == expected_context
+
+
+def test_push_positive():
+    op = Push()
+    context = Context(stack=[1, 2, 3], value=4)
+    expected_context = Context(stack=[1, 2, 3, 4], value=1)
+    assert op(context) == expected_context
+
+
+def test_push_null_value():
+    op = Push()
+    context = Context()
+    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+        print(op(context))
+
+
+def test_push_negative_value():
+    op = Push()
+    context = Context(stack=[1, 2, 3], value=-4)
+    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+        print(op(context))
 
 
 def test_add():
+    op = Add()
     context = Context(stack=[1, 2, 3])
     expected_context = Context(stack=[1, 5])
-    _test_op(Add(), context, expected_context)
+    assert op(context) == expected_context
