@@ -43,6 +43,9 @@ class Resize(Op):
         self.value = value
 
     def _call(self, context: Context) -> Context:
+        if context.value <= 0:
+            raise RuntimeError(f'Invalid non-positive resize value {context.value}')
+
         context.value = self.value
         return context
 
@@ -54,6 +57,13 @@ class Push(Op):
 
         context.stack.append(context.value)
         context.value = 1
+        return context
+
+
+class Duplicate(Op):
+    def _call(self, context: Context) -> Context:
+        x = context.stack.pop()
+        context.stack.extend([x, x])
         return context
 
 

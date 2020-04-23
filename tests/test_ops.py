@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 from piet.context import Context
-from piet.ops import Add, Init, Op, Push, Resize
+from piet.ops import Add, Duplicate, Init, Op, Push, Resize
 
 
 def test_ops_purity():
@@ -55,7 +55,21 @@ def test_resize():
     assert op(context) == expected_context
 
 
-def test_push_positive():
+def test_resize_null_value():
+    op = Resize(0)
+    context = Context()
+    with pytest.raises(RuntimeError, match='Invalid non-positive resize value'):
+        print(op(context))
+
+
+def test_resize_negative_value():
+    op = Resize(-4)
+    context = Context()
+    with pytest.raises(RuntimeError, match='Invalid non-positive resize value'):
+        print(op(context))
+
+
+def test_push():
     op = Push()
     context = Context(stack=[1, 2, 3], value=4)
     expected_context = Context(stack=[1, 2, 3, 4], value=1)
@@ -71,9 +85,16 @@ def test_push_null_value():
 
 def test_push_negative_value():
     op = Push()
-    context = Context(stack=[1, 2, 3], value=-4)
+    context = Context(value=-4)
     with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
         print(op(context))
+
+
+def test_duplicate():
+    op = Duplicate()
+    context = Context(stack=[1, 2, 3])
+    expected_context = Context(stack=[1, 2, 3, 3])
+    assert op(context) == expected_context
 
 
 def test_add():
