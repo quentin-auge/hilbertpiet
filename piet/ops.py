@@ -78,3 +78,7 @@ class BinaryOp(Op):
 
 class Add(BinaryOp):
     binary_op = operator.add
+
+
+class Multiply(BinaryOp):
+    binary_op = operator.mul

@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 from piet.context import Context
-from piet.ops import Add, Duplicate, Init, Op, Push, Resize
+from piet.ops import Add, Duplicate, Init, Multiply, Op, Push, Resize
 
 
 def test_ops_purity():
@@ -97,4 +97,11 @@ def test_add():
     op = Add()
     context = Context(stack=[1, 2, 3])
     expected_context = Context(stack=[1, 5])
+    assert op(context) == expected_context
+
+
+def test_multiply():
+    op = Multiply()
+    context = Context(stack=[1, 2, 3, 4])
+    expected_context = Context(stack=[1, 2, 12])
     assert op(context) == expected_context
