@@ -1,6 +1,7 @@
 import abc
 import operator
 from copy import deepcopy
+from dataclasses import dataclass, fields
 
 from piet.context import Context
 
@@ -13,6 +14,7 @@ def purify_call(call):
     return wrapper
 
 
+@dataclass(eq=False)
 class Op:
     @purify_call
     def __call__(self, context: Context) -> Context:
@@ -22,11 +24,15 @@ class Op:
     def _call(self, context: Context) -> Context:
         raise NotImplementedError
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}()'
-
     def __str__(self):
-        return self.__class__.__name__
+        cls = self.__class__.__name__
+
+        params = []
+        for param in fields(self):
+            params.append(getattr(self, param.name))
+        params = ' '.join(map(repr, params))
+
+        return f'{cls} {params}'
 
 
 class Init(Op):
@@ -38,7 +44,10 @@ class Init(Op):
         return context
 
 
+@dataclass(eq=False)
 class Resize(Op):
+    value: int
+
     def __init__(self, value: int):
         if value <= 0:
             raise ValueError(f'Invalid non-positive resize value {value}')

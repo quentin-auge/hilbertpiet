@@ -1,4 +1,5 @@
 import abc
+from dataclasses import dataclass
 
 from piet.context import Context
 from piet.ops import Op, Push, Resize
@@ -16,7 +17,10 @@ class Macro(Op):
         raise NotImplementedError
 
 
+@dataclass(eq=False)
 class PushVal(Macro):
+    value: int
+
     def __init__(self, value: int):
         self.value = value
 

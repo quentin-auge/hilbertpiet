@@ -1,4 +1,5 @@
 from copy import deepcopy
+from dataclasses import dataclass
 
 import pytest
 
@@ -32,6 +33,21 @@ def test_ops_purity():
     assert new_context is not context2
     assert new_context == expected_context
     assert context2 == context
+
+
+def test_str():
+    @dataclass
+    class TestOp(Op):
+        c: int
+        a: str
+        b: int
+
+        def _call(self, context: Context) -> Context:
+            return context
+
+    op = TestOp(b=1, c=2, a='e')
+
+    assert str(op) == "TestOp 2 'e' 1"
 
 
 def test_init():

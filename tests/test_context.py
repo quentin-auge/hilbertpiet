@@ -21,34 +21,9 @@ def test_distinct_value():
     assert c1 != c2
 
 
-def test_repr():
-    c = Context(stack=[1, 2, 3], value=4)
-    assert repr(c) == 'Context(stack = [1, 2, 3], value = 4)'
-
-
-def test_repr_no_stack():
-    c = Context(value=4)
-    assert repr(c) == 'Context(stack = [], value = 4)'
-
-
-def test_repr_no_value():
-    c = Context(stack=[1, 2, 3])
-    assert repr(c) == 'Context(stack = [1, 2, 3])'
-
-
 def test_str():
     c = Context(stack=[1, 2, 3], value=4)
-    assert str(c) == '[1, 2, 3]  4'
-
-
-def test_str_no_stack():
-    c = Context(value=4)
-    assert str(c) == '[]  4'
-
-
-def test_str_no_value():
-    c = Context(stack=[1, 2, 3])
-    assert str(c) == '[1, 2, 3]'
+    assert str(c) == '[1, 2, 3] 4'
 
 
 def test_deepcopy():
