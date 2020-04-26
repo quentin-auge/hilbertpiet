@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List
 
 from piet.macros import Macro
-from piet.ops import Add, Multiply, Op, Push, Resize
+from piet.ops import Add, Duplicate, Multiply, Op, Push, Resize
 
 
 @dataclass
@@ -79,6 +79,12 @@ class PushNumber(Macro):
         result._ops = [self, other, Multiply()]
         return result
 
+    def __pow__(self, other: PushNumber) -> PushNumber:
+        result = PushNumber(self.n ** other.n)
+        result._ops = [self]
+        result._ops += [Duplicate() for _ in range(1, other.n)]
+        result._ops += [Multiply() for _ in range(1, other.n)]
+        return result
 
 def optimize_mult(nums, max_num):
     for i in range(2, max_num // 2 + 1):

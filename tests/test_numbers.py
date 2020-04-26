@@ -38,3 +38,14 @@ def test_mul():
 
     number = PushNumber(n1) * PushNumber(n2)
     assert_consistent_number(number, expected)
+
+
+def test_pow():
+    n1, n2 = 3, 4
+    expected = 81
+
+    number = PushNumber(n1) ** PushNumber(n2)
+    assert_consistent_number(number, expected)
+
+    number = PushNumber(n1) ** PushNumber(n2)
+    assert_consistent_number(number, expected)
