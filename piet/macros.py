@@ -1,8 +1,7 @@
 import abc
-from dataclasses import dataclass
 
 from piet.context import Context
-from piet.ops import Op, Push, Resize
+from piet.ops import Op
 
 
 class Macro(Op):
@@ -15,15 +14,3 @@ class Macro(Op):
     @abc.abstractmethod
     def ops(self):
         raise NotImplementedError
-
-
-@dataclass(eq=False)
-class PushVal(Macro):
-    value: int
-
-    def __init__(self, value: int):
-        self.value = value
-
-    @property
-    def ops(self):
-        return [Resize(self.value), Push()]
