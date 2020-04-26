@@ -1,4 +1,4 @@
-from mock import MagicMock
+from mock import MagicMock, PropertyMock
 
 from piet.context import Context
 from piet.macros import Macro
@@ -49,9 +49,14 @@ def test_expand_ops():
 
     class C(DummyMacro): pass
 
-    A.expand_ops = MagicMock()
-    B.expand_ops = MagicMock()
-    C.expand_ops = MagicMock()
+    expanded_ops_A = PropertyMock()
+    A.expanded_ops = expanded_ops_A
+
+    expanded_ops_B = PropertyMock()
+    B.expanded_ops = expanded_ops_B
+
+    expanded_ops_C = PropertyMock()
+    C.expanded_ops = expanded_ops_C
 
     class TestMacro(Macro):
         @property
@@ -59,11 +64,11 @@ def test_expand_ops():
             return [A(), B(), C()]
 
     macro = TestMacro()
-    macro.expand_ops()
+    print(macro.expanded_ops)
 
-    assert A.expand_ops.called
-    assert not B.expand_ops.called
-    assert C.expand_ops.called
+    assert expanded_ops_A.called
+    assert not expanded_ops_B.called
+    assert expanded_ops_C.called
 
 
 def test_cost():

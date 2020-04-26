@@ -11,11 +11,12 @@ class Macro(Op):
             context = op(context)
         return context
 
-    def expand_ops(self) -> List[Op]:
+    @property
+    def expanded_ops(self) -> List[Op]:
         expanded_ops = []
         for op in self.ops:
             if isinstance(op, Macro):
-                expanded_ops += op.expand_ops()
+                expanded_ops += op.expanded_ops
             else:
                 expanded_ops += [op]
         return expanded_ops
