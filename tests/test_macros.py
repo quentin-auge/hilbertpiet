@@ -12,6 +12,12 @@ class DummyOp(Op):
         return context
 
 
+class DummyMacro(Macro):
+    @property
+    def ops(self):
+        return []
+
+
 def test_call():
     class A(DummyOp): pass
 
@@ -34,6 +40,30 @@ def test_call():
     A.__call__.assert_called_with(Context(stack=[], value=0))
     B.__call__.assert_called_with(Context(stack=[1], value=1))
     C.__call__.assert_called_with(Context(stack=[1, 2], value=2))
+
+
+def test_expand_ops():
+    class A(DummyMacro): pass
+
+    class B(DummyOp): pass
+
+    class C(DummyMacro): pass
+
+    A.expand_ops = MagicMock()
+    B.expand_ops = MagicMock()
+    C.expand_ops = MagicMock()
+
+    class TestMacro(Macro):
+        @property
+        def ops(self):
+            return [A(), B(), C()]
+
+    macro = TestMacro()
+    macro.expand_ops()
+
+    assert A.expand_ops.called
+    assert not B.expand_ops.called
+    assert C.expand_ops.called
 
 
 def test_cost():
