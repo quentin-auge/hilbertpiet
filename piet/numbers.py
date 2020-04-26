@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from dataclasses import dataclass
 from typing import List
 
@@ -86,30 +87,27 @@ class PushNumber(Macro):
         result._ops += [Multiply() for _ in range(1, other.n)]
         return result
 
-def optimize_mult(nums, max_num):
-    for i in range(2, max_num // 2 + 1):
-        for j in range(i, max_num // i + 1):
 
-            old_cost = nums[i * j]._cost
+def _compute_and_optimize(binary_op, i, j, nums):
+    old_cost = nums[binary_op(i, j)]._cost
 
-            candidate = nums[i] * nums[j]
-            new_cost = candidate._cost
+    candidate = binary_op(nums[i], nums[j])
+    new_cost = candidate._cost
 
-            if new_cost < old_cost:
-                nums[i * j]._ops = candidate._ops
+    if new_cost < old_cost:
+        nums[binary_op(i, j)]._ops = candidate._ops
 
 
 def optimize_add(nums, max_num):
-    for i in range(1, max_num - 2 + 1):
+    for i in range(2, max_num - 2 + 1):
         for j in range(i, max_num - i + 1):
+            _compute_and_optimize(operator.add, i, j, nums)
 
-            old_cost = nums[i + j]._cost
 
-            candidate = nums[i] + nums[j]
-            new_cost = candidate._cost
-
-            if new_cost < old_cost:
-                nums[i + j]._ops = candidate._ops
+def optimize_mult(nums, max_num):
+    for i in range(2, max_num // 2 + 1):
+        for j in range(i, max_num // i + 1):
+            _compute_and_optimize(operator.mul, i, j, nums)
 
 
 def get_total_cost(nums):
@@ -128,8 +126,6 @@ if __name__ == '__main__':
         print(f'Round {i}: {optimize.__name__}')
         optimize(nums, max_num)
         print(f'  Total cost = {get_total_cost(nums)}')
-
-    print()
 
     for num in nums[1:]:
         print(f'{num} = {num.pretty_decomposition}')
