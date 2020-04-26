@@ -11,6 +11,10 @@ class Macro(Op):
         return context
 
     @property
+    def _cost(self):
+        return sum(op._cost for op in self.ops)
+
+    @property
     @abc.abstractmethod
     def ops(self):
         raise NotImplementedError

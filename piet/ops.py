@@ -24,6 +24,10 @@ class Op:
     def _call(self, context: Context) -> Context:
         raise NotImplementedError
 
+    @property
+    def _cost(self):
+        return 1
+
     def __str__(self):
         cls = self.__class__.__name__
 
@@ -52,6 +56,10 @@ class Resize(Op):
         if value <= 0:
             raise ValueError(f'Invalid non-positive resize value {value}')
         self.value = value
+
+    @property
+    def _cost(self):
+        return self.value - 1
 
     def _call(self, context: Context) -> Context:
         context.value = self.value

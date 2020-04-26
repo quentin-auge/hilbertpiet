@@ -8,13 +8,13 @@ from piet.ops import Add, Duplicate, Init, Multiply, Op, Push, Resize
 
 
 def test_ops_purity():
-    class TestOp(Op):
+    class DummyOp(Op):
         def _call(self, context: Context) -> Context:
             context.stack = [18]
             context.value = 32
             return context
 
-    op = TestOp()
+    op = DummyOp()
 
     context = Context(stack=[1, 2, 3], value=4)
     context1 = deepcopy(context)
@@ -37,7 +37,7 @@ def test_ops_purity():
 
 def test_str():
     @dataclass
-    class TestOp(Op):
+    class DummyOp(Op):
         c: int
         a: str
         b: int
@@ -45,9 +45,17 @@ def test_str():
         def _call(self, context: Context) -> Context:
             return context
 
-    op = TestOp(b=1, c=2, a='e')
+    op = DummyOp(b=1, c=2, a='e')
 
-    assert str(op) == "TestOp 2 'e' 1"
+    assert str(op) == "DummyOp 2 'e' 1"
+
+
+@pytest.mark.parametrize('op,expected_cost', [
+    (Init(), 1), (Resize(1), 0), (Resize(2), 1), (Resize(3), 2),
+    (Push(), 1), (Add(), 1), (Multiply(), 1)
+])
+def test_cost(op, expected_cost):
+    assert op._cost == expected_cost
 
 
 def test_init():
