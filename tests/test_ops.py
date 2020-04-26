@@ -52,7 +52,7 @@ def test_str():
 
 @pytest.mark.parametrize('op,expected_cost', [
     (Init(), 1), (Resize(1), 0), (Resize(2), 1), (Resize(3), 2),
-    (Push(), 1), (Add(), 1), (Multiply(), 1)
+    (Push(), 1), (Duplicate(), 1), (Add(), 1), (Multiply(), 1)
 ])
 def test_cost(op, expected_cost):
     assert op._cost == expected_cost
