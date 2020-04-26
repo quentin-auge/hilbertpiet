@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
-from piet.context import Context
 from piet.macros import Macro
 from piet.ops import Add, Multiply, Op, Push, Resize
 
@@ -23,6 +22,52 @@ class PushNumber(Macro):
     @property
     def ops(self) -> List[Op]:
         return self._ops
+
+    @property
+    def pretty_decomposition(self) -> str:
+        """
+        Derive infix number expression from its postfix `Macro.expanded_ops` representation.
+        """
+
+        expanded_ops = self.expanded_ops
+
+        stack = []
+
+        last_str_op = None
+        precedence = {None: 10, '+': 2, '*': 3}
+
+        i = 0
+        while i < len(expanded_ops):
+
+            op = expanded_ops[i]
+
+            if isinstance(op, Resize):
+                stack.append(str(op.value))
+                i += 1
+
+            else:
+                if isinstance(op, Add):
+                    str_op = '+'
+                elif isinstance(op, Multiply):
+                    str_op = '*'
+                else:
+                    raise NotImplementedError
+
+                y = stack.pop()
+                x = stack.pop()
+
+                if precedence[str_op] > precedence[last_str_op]:
+                    expr = f'{x} {str_op} ({y})'
+                else:
+                    expr = f'{x} {str_op} {y}'
+
+                stack.append(expr)
+
+                last_str_op = str_op
+
+            i += 1
+
+        return stack.pop()
 
     def __add__(self, other: PushNumber) -> PushNumber:
         result = PushNumber(self.n + other.n)
@@ -47,6 +92,7 @@ def optimize_mult(nums, max_num):
             if new_cost < old_cost:
                 nums[i * j]._ops = candidate._ops
 
+
 def optimize_add(nums, max_num):
     for i in range(1, max_num - 2 + 1):
         for j in range(i, max_num - i + 1):
@@ -59,8 +105,10 @@ def optimize_add(nums, max_num):
             if new_cost < old_cost:
                 nums[i + j]._ops = candidate._ops
 
+
 def get_total_cost(nums):
     return sum(num._cost if num else 0 for num in nums)
+
 
 if __name__ == '__main__':
     max_num = 128
@@ -75,5 +123,7 @@ if __name__ == '__main__':
         optimize(nums, max_num)
         print(f'  Total cost = {get_total_cost(nums)}')
 
+    print()
+
     for num in nums[1:]:
-        print(f'  {num} = {num.expand_ops()}, cost = {num._cost}')
+        print(f'{num} = {num.pretty_decomposition}')
