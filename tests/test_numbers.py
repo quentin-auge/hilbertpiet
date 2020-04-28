@@ -1,51 +1,71 @@
 import pytest
 
 from piet.context import Context
-from piet.numbers import PushNumber
+from piet.numbers import UnaryNumberAst
 
 
 def test_str():
-    assert str(PushNumber(19)) == '19'
+    assert str(UnaryNumberAst(19)) == '19'
 
 
-def assert_consistent_number(number: PushNumber, n: int):
+def assert_consistent_number(number: UnaryNumberAst, n: int):
     assert number.n == n
     assert number(Context()).stack == [n]
 
 
-@pytest.mark.parametrize('n', [1, 2, 3])
-def test_default(n):
-    assert_consistent_number(PushNumber(n), n)
+@pytest.mark.parametrize('n', [1, 2, 3, 5])
+def test_unary(n):
+    assert_consistent_number(UnaryNumberAst(n), n)
+
+
+@pytest.mark.parametrize('n', [1, 2, 3, 5])
+def test_unary_str(n):
+    assert str(UnaryNumberAst(n)) == str(n)
 
 
 def test_add():
     n1, n2 = 16, 4
     expected = 20
 
-    number = PushNumber(n1) + PushNumber(n2)
+    number = UnaryNumberAst(n1) + UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
 
-    number = PushNumber(n1) + PushNumber(n2)
+    number = UnaryNumberAst(n1) + UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
+
+
+def test_add_str():
+    n1, n2 = 16, 4
+    assert str(UnaryNumberAst(n1) + UnaryNumberAst(n2)) == '16 + 4'
 
 
 def test_mul():
     n1, n2 = 16, 4
     expected = 64
 
-    number = PushNumber(n1) * PushNumber(n2)
+    number = UnaryNumberAst(n1) * UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
 
-    number = PushNumber(n1) * PushNumber(n2)
+    number = UnaryNumberAst(n1) * UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
+
+
+def test_mult_str():
+    n1, n2 = 16, 4
+    assert str(UnaryNumberAst(n1) * UnaryNumberAst(n2)) == '16 * 4'
 
 
 def test_pow():
     n1, n2 = 3, 4
     expected = 81
 
-    number = PushNumber(n1) ** PushNumber(n2)
+    number = UnaryNumberAst(n1) ** UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
 
-    number = PushNumber(n1) ** PushNumber(n2)
+    number = UnaryNumberAst(n1) ** UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
+
+
+def test_pow_str():
+    n1, n2 = 3, 4
+    assert str(UnaryNumberAst(n1) ** UnaryNumberAst(n2)) == '3 ** 4'
