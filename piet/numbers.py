@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import abc
 import operator
+import pickle
 from dataclasses import dataclass
 from math import log, sqrt
-from typing import List
+from pathlib import Path
+from typing import Dict, List
 
 from piet.macros import Macro
 from piet.ops import Add, Duplicate, Multiply, Op, Push, Resize
@@ -14,9 +16,15 @@ from piet.ops import Add, Duplicate, Multiply, Op, Push, Resize
 class PushNumber(Macro):
     n: int
 
+    __asts = {}
+
+    @classmethod
+    def load_numbers(cls, filepath: Path):
+        cls.__asts = PushNumberOptimizer.load(filepath)
+
     def __init__(self, n: int):
         self.n = n
-        self._ast = UnaryNumberAst(n)
+        self._ast = self.__asts.get(n, UnaryNumberAst(n))
 
     @property
     def ops(self) -> List[Op]:
@@ -160,11 +168,11 @@ class PushNumberOptimizer:
     def optimize(cls):
         optimizations = [cls._optimize_pow, cls._optimize_mult, cls._optimize_add] * 2
 
-        print(f'Round 0 -> {cls._cost}')
+        print(f'Round 0: cost={cls._cost}')
 
         for i, optimize in enumerate(optimizations, 1):
             optimize()
-            print(f'Round {i}: {optimize.__name__} -> {cls._cost}')
+            print(f'Round {i}: cost={cls._cost}, {optimize.__name__}')
 
     @classmethod
     def _optimize_add(cls):
@@ -205,11 +213,33 @@ class PushNumberOptimizer:
     def _cost(cls):
         return sum(num._cost for num in cls.nums.values())
 
+    @classmethod
+    def save(cls, out_filepath: Path):
+        asts = {n: cls.nums[n]._ast for n in cls.nums}
+        with out_filepath.open('wb') as f:
+            pickle.dump(asts, f)
+
+    @classmethod
+    def load(cls, filepath: Path) -> Dict[int, BaseNumberAst]:
+        with filepath.open('rb') as f:
+            asts = pickle.load(f)
+        return asts
+
 
 if __name__ == '__main__':
 
+    PROJECT_ROOT: Path = Path(__file__).parent.parent
+
+    numbers_filepath = PROJECT_ROOT / 'numbers.pk'
+
     PushNumberOptimizer.optimize()
 
+    print()
+    print(f'Saving numbers to {numbers_filepath}')
+    PushNumberOptimizer.save(numbers_filepath)
+
+    print()
+    PushNumber.load_numbers(numbers_filepath)
     for n in range(1, PushNumberOptimizer.MAX_NUM + 1):
-        num = PushNumberOptimizer.nums[n]
-        print(f'{n} = {num.decomposition}, cost = {num._cost}')
+        num = PushNumber(n)
+        print(f'{n} = {num.decomposition:28} cost={num._cost}')
