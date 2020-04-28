@@ -19,10 +19,20 @@ class PushNumberOptimizer:
             for j in range(i, self.max_num - i + 1):
                 self._step(operator.add, i, j)
 
+    def _optimize_sub(self):
+        for i in range(self.max_num, 1, -1):
+            for j in range(1, i):
+                self._step(operator.sub, i, j)
+
     def _optimize_mult(self):
         for i in range(2, self.max_num // 2 + 1):
             for j in range(i, self.max_num // i + 1):
                 self._step(operator.mul, i, j)
+
+    def _optimize_div(self):
+        for i in range(self.max_num, 1, -1):
+            for j in range(2, i // 2):
+                self._step(operator.floordiv, i, j)
 
     def _optimize_pow(self):
         for i in range(2, int(sqrt(self.max_num) + 1)):
@@ -66,7 +76,10 @@ def main():
 
         print(f'Round 0: cost={opt._cost}')
 
-        optimizations = [opt._optimize_pow, opt._optimize_mult, opt._optimize_add] * 2
+        optimizations = [opt._optimize_pow,
+                         opt._optimize_mult, opt._optimize_div,
+                         opt._optimize_add, opt._optimize_sub] * 2
+
         for i, optimize in enumerate(optimizations, 1):
             optimize()
             print(f'Round {i}: cost={opt._cost}, {optimize.__name__}')
