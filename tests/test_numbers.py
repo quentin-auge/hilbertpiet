@@ -41,6 +41,22 @@ def test_add_str():
     assert str(UnaryNumberAst(n1) + UnaryNumberAst(n2)) == '16 + 4'
 
 
+def test_sub():
+    n1, n2 = 16, 4
+    expected = 12
+
+    number = UnaryNumberAst(n1) - UnaryNumberAst(n2)
+    assert_consistent_number(number, expected)
+
+    number = UnaryNumberAst(n1) - UnaryNumberAst(n2)
+    assert_consistent_number(number, expected)
+
+
+def test_sub_str():
+    n1, n2 = 16, 4
+    assert str(UnaryNumberAst(n1) - UnaryNumberAst(n2)) == '16 - 4'
+
+
 def test_mul():
     n1, n2 = 16, 4
     expected = 64
@@ -49,6 +65,17 @@ def test_mul():
     assert_consistent_number(number, expected)
 
     number = UnaryNumberAst(n1) * UnaryNumberAst(n2)
+    assert_consistent_number(number, expected)
+
+
+def test_div():
+    n1, n2 = 20, 3
+    expected = 6
+
+    number = UnaryNumberAst(n1) // UnaryNumberAst(n2)
+    assert_consistent_number(number, expected)
+
+    number = UnaryNumberAst(n1) // UnaryNumberAst(n2)
     assert_consistent_number(number, expected)
 
 

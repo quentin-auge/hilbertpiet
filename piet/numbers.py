@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List
 
 from piet.macros import Macro
-from piet.ops import Add, Duplicate, Multiply, Op, Push, Resize
+from piet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substract
 
 
 @dataclass(eq=False)
@@ -48,8 +48,14 @@ class BaseNumberAst(Macro):
     def __add__(self, other: BaseNumberAst) -> BaseNumberAst:
         return AddNumberAst(self, other)
 
+    def __sub__(self, other: BaseNumberAst) -> BaseNumberAst:
+        return SubNumberAst(self, other)
+
     def __mul__(self, other: BaseNumberAst) -> BaseNumberAst:
         return MultNumberAst(self, other)
+
+    def __floordiv__(self, other: BaseNumberAst) -> BaseNumberAst:
+        return DivNumberAst(self, other)
 
     def __pow__(self, other: BaseNumberAst) -> BaseNumberAst:
         return PowNumberAst(self, other)
@@ -130,6 +136,19 @@ class AddNumberAst(BinaryNumberAst):
         return 1
 
 
+class SubNumberAst(BinaryNumberAst):
+    _binary_op = operator.sub
+    _binary_op_str = '-'
+
+    @property
+    def ops(self) -> List[Op]:
+        return [self.n1, self.n2, Substract()]
+
+    @property
+    def _precedence(self) -> int:
+        return 1
+
+
 class MultNumberAst(BinaryNumberAst):
     _binary_op = operator.mul
     _binary_op_str = '*'
@@ -137,6 +156,19 @@ class MultNumberAst(BinaryNumberAst):
     @property
     def ops(self) -> List[Op]:
         return [self.n1, self.n2, Multiply()]
+
+    @property
+    def _precedence(self) -> int:
+        return 2
+
+
+class DivNumberAst(BinaryNumberAst):
+    _binary_op = operator.floordiv
+    _binary_op_str = '//'
+
+    @property
+    def ops(self) -> List[Op]:
+        return [self.n1, self.n2, Divide()]
 
     @property
     def _precedence(self) -> int:

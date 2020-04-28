@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import pytest
 
 from piet.context import Context
-from piet.ops import Add, Duplicate, Init, Multiply, Op, Push, Resize
+from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op, Push, Resize, Substract
 
 
 def test_ops_purity():
@@ -124,8 +124,22 @@ def test_add():
     assert op(context) == expected_context
 
 
+def test_substract():
+    op = Substract()
+    context = Context(stack=[1, 5, 2])
+    expected_context = Context(stack=[1, 3])
+    assert op(context) == expected_context
+
+
 def test_multiply():
     op = Multiply()
     context = Context(stack=[1, 2, 3, 4])
     expected_context = Context(stack=[1, 2, 12])
+    assert op(context) == expected_context
+
+
+def test_divide():
+    op = Divide()
+    context = Context(stack=[1, 20, 3])
+    expected_context = Context(stack=[1, 6])
     assert op(context) == expected_context

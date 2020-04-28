@@ -88,7 +88,8 @@ class BinaryOp(Op):
 
     def _call(self, context: Context) -> Context:
         stack = context.stack
-        result = self.binary_op(stack.pop(), stack.pop())
+        b, a = stack.pop(), stack.pop()
+        result = self.binary_op(a, b)
         stack.append(result)
         return context
 
@@ -97,5 +98,13 @@ class Add(BinaryOp):
     binary_op = operator.add
 
 
+class Substract(BinaryOp):
+    binary_op = operator.sub
+
+
 class Multiply(BinaryOp):
     binary_op = operator.mul
+
+
+class Divide(BinaryOp):
+    binary_op = operator.floordiv
