@@ -10,6 +10,23 @@ from piet.macros import Macro
 from piet.ops import Add, Duplicate, Multiply, Op, Push, Resize
 
 
+@dataclass(eq=False)
+class PushNumber(Macro):
+    n: int
+
+    def __init__(self, n: int):
+        self.n = n
+        self._ast = UnaryNumberAst(n)
+
+    @property
+    def ops(self) -> List[Op]:
+        return [self._ast]
+
+    @property
+    def decomposition(self) -> str:
+        return str(self._ast)
+
+
 class BaseNumberAst(Macro):
 
     def __init__(self, n: int):
@@ -21,13 +38,13 @@ class BaseNumberAst(Macro):
         raise NotImplementedError
 
     def __add__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return PushAddNumber(self, other)
+        return AddNumberAst(self, other)
 
     def __mul__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return PushMultNumber(self, other)
+        return MultNumberAst(self, other)
 
     def __pow__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return PushPowNumber(self, other)
+        return PowNumberAst(self, other)
 
     @abc.abstractmethod
     def __str__(self):
@@ -92,7 +109,7 @@ class BinaryNumberAst(BaseNumberAst):
         raise NotImplementedError
 
 
-class PushAddNumber(BinaryNumberAst):
+class AddNumberAst(BinaryNumberAst):
     _binary_op = operator.add
     _binary_op_str = '+'
 
@@ -105,7 +122,7 @@ class PushAddNumber(BinaryNumberAst):
         return 1
 
 
-class PushMultNumber(BinaryNumberAst):
+class MultNumberAst(BinaryNumberAst):
     _binary_op = operator.mul
     _binary_op_str = '*'
 
@@ -118,7 +135,7 @@ class PushMultNumber(BinaryNumberAst):
         return 2
 
 
-class PushPowNumber(BinaryNumberAst):
+class PowNumberAst(BinaryNumberAst):
     _binary_op = operator.pow
     _binary_op_str = '**'
 
@@ -134,51 +151,65 @@ class PushPowNumber(BinaryNumberAst):
         return 3
 
 
-def _compute_and_optimize(binary_op, i, j, nums):
-    old_cost = nums[binary_op(i, j)]._cost
+@dataclass
+class PushNumberOptimizer:
+    MAX_NUM = 128
+    nums = {n: PushNumber(n) for n in range(1, MAX_NUM + 1)}
 
-    candidate = binary_op(nums[i], nums[j])
-    new_cost = candidate._cost
+    @classmethod
+    def optimize(cls):
+        optimizations = [cls._optimize_pow, cls._optimize_mult, cls._optimize_add] * 2
 
-    if new_cost < old_cost:
-        nums[binary_op(i, j)] = candidate
+        print(f'Round 0 -> {cls._cost}')
 
+        for i, optimize in enumerate(optimizations, 1):
+            optimize()
+            print(f'Round {i}: {optimize.__name__} -> {cls._cost}')
 
-def optimize_add(nums, max_num):
-    for i in range(2, max_num - 2 + 1):
-        for j in range(i, max_num - i + 1):
-            _compute_and_optimize(operator.add, i, j, nums)
+    @classmethod
+    def _optimize_add(cls):
+        for i in range(2, cls.MAX_NUM - 2 + 1):
+            for j in range(i, cls.MAX_NUM - i + 1):
+                cls._step(operator.add, i, j)
 
+    @classmethod
+    def _optimize_mult(cls):
+        for i in range(2, cls.MAX_NUM // 2 + 1):
+            for j in range(i, cls.MAX_NUM // i + 1):
+                cls._step(operator.mul, i, j)
 
-def optimize_mult(nums, max_num):
-    for i in range(2, max_num // 2 + 1):
-        for j in range(i, max_num // i + 1):
-            _compute_and_optimize(operator.mul, i, j, nums)
+    @classmethod
+    def _optimize_pow(cls):
+        for i in range(2, int(sqrt(cls.MAX_NUM) + 1)):
+            for j in range(i, int(log(cls.MAX_NUM, i) + 1)):
+                cls._step(operator.pow, i, j)
 
+    @classmethod
+    def _step(cls, binary_op, i: int, j: int):
+        old_cost = cls.nums[binary_op(i, j)]._cost
 
-def optimize_pow(nums, max_num):
-    for i in range(2, int(sqrt(max_num) + 1)):
-        for j in range(i, int(log(max_num, i) + 1)):
-            _compute_and_optimize(operator.pow, i, j, nums)
+        candidate_ast = binary_op(cls.nums[i]._ast, cls.nums[j]._ast)
+        new_cost = candidate_ast._cost
 
+        if new_cost < old_cost:
+            cls.nums[binary_op(i, j)]._ast = candidate_ast
 
-def get_total_cost(nums):
-    return sum(num._cost if num else 0 for num in nums)
+    class classproperty(object):
+        def __init__(self, f):
+            self.f = f
+
+        def __get__(self, obj, owner):
+            return self.f(owner)
+
+    @classproperty
+    def _cost(cls):
+        return sum(num._cost for num in cls.nums.values())
 
 
 if __name__ == '__main__':
 
-    max_num = 128
-    nums = [None] + [UnaryNumberAst(i) for i in range(1, max_num + 1)]
+    PushNumberOptimizer.optimize()
 
-    optimizations = [optimize_pow, optimize_mult, optimize_add] * 3
-
-    print(f'Total cost = {get_total_cost(nums)}')
-
-    for i, optimize in enumerate(optimizations, 1):
-        print(f'Round {i}: {optimize.__name__}')
-        optimize(nums, max_num)
-        print(f'  Total cost = {get_total_cost(nums)}')
-
-    for num in nums[1:]:
-        print(f'{num.n} = {num} = {repr(num)}, cost = {num._cost}')
+    for n in range(1, PushNumberOptimizer.MAX_NUM + 1):
+        num = PushNumberOptimizer.nums[n]
+        print(f'{n} = {num.decomposition}, cost = {num._cost}')
