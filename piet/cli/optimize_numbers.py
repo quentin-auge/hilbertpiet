@@ -1,7 +1,51 @@
+from __future__ import annotations
+
 import argparse
+import operator
+import pickle
+from math import log, sqrt
 from pathlib import Path
 
-from piet.numbers import PushNumber, PushNumberOptimizer
+from piet.numbers import PushNumber
+
+
+class PushNumberOptimizer:
+    def __init__(self, max_num: int):
+        self.max_num = max_num
+        self.nums = {n: PushNumber(n) for n in range(1, max_num + 1)}
+
+    def _optimize_add(self):
+        for i in range(2, self.max_num - 2 + 1):
+            for j in range(i, self.max_num - i + 1):
+                self._step(operator.add, i, j)
+
+    def _optimize_mult(self):
+        for i in range(2, self.max_num // 2 + 1):
+            for j in range(i, self.max_num // i + 1):
+                self._step(operator.mul, i, j)
+
+    def _optimize_pow(self):
+        for i in range(2, int(sqrt(self.max_num) + 1)):
+            for j in range(2, int(log(self.max_num, i) + 1)):
+                self._step(operator.pow, i, j)
+
+    def _step(self, binary_op, i: int, j: int):
+        old_cost = self.nums[binary_op(i, j)]._cost
+
+        candidate_ast = binary_op(self.nums[i]._ast, self.nums[j]._ast)
+        new_cost = candidate_ast._cost
+
+        if new_cost < old_cost:
+            self.nums[binary_op(i, j)]._ast = candidate_ast
+
+    @property
+    def _cost(self):
+        return sum(num._cost for num in self.nums.values())
+
+    def save(self, out_filepath: Path):
+        asts = {n: self.nums[n]._ast for n in self.nums}
+        with out_filepath.open('wb') as f:
+            pickle.dump(asts, f)
 
 
 def main():
