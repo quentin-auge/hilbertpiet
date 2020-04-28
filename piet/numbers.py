@@ -161,85 +161,69 @@ class PowNumberAst(BinaryNumberAst):
 
 @dataclass
 class PushNumberOptimizer:
-    MAX_NUM = 128
-    nums = {n: PushNumber(n) for n in range(1, MAX_NUM + 1)}
+    def __init__(self, max_num: int):
+        self.max_num = max_num
+        self.nums = {n: PushNumber(n) for n in range(1, max_num + 1)}
 
-    @classmethod
-    def optimize(cls):
-        optimizations = [cls._optimize_pow, cls._optimize_mult, cls._optimize_add] * 2
+    def _optimize_add(self):
+        for i in range(2, self.max_num - 2 + 1):
+            for j in range(i, self.max_num - i + 1):
+                self._step(operator.add, i, j)
 
-        print(f'Round 0: cost={cls._cost}')
+    def _optimize_mult(self):
+        for i in range(2, self.max_num // 2 + 1):
+            for j in range(i, self.max_num // i + 1):
+                self._step(operator.mul, i, j)
 
-        for i, optimize in enumerate(optimizations, 1):
-            optimize()
-            print(f'Round {i}: cost={cls._cost}, {optimize.__name__}')
+    def _optimize_pow(self):
+        for i in range(2, int(sqrt(self.max_num) + 1)):
+            for j in range(i, int(log(self.max_num, i) + 1)):
+                self._step(operator.pow, i, j)
 
-    @classmethod
-    def _optimize_add(cls):
-        for i in range(2, cls.MAX_NUM - 2 + 1):
-            for j in range(i, cls.MAX_NUM - i + 1):
-                cls._step(operator.add, i, j)
+    def _step(self, binary_op, i: int, j: int):
+        old_cost = self.nums[binary_op(i, j)]._cost
 
-    @classmethod
-    def _optimize_mult(cls):
-        for i in range(2, cls.MAX_NUM // 2 + 1):
-            for j in range(i, cls.MAX_NUM // i + 1):
-                cls._step(operator.mul, i, j)
-
-    @classmethod
-    def _optimize_pow(cls):
-        for i in range(2, int(sqrt(cls.MAX_NUM) + 1)):
-            for j in range(i, int(log(cls.MAX_NUM, i) + 1)):
-                cls._step(operator.pow, i, j)
-
-    @classmethod
-    def _step(cls, binary_op, i: int, j: int):
-        old_cost = cls.nums[binary_op(i, j)]._cost
-
-        candidate_ast = binary_op(cls.nums[i]._ast, cls.nums[j]._ast)
+        candidate_ast = binary_op(self.nums[i]._ast, self.nums[j]._ast)
         new_cost = candidate_ast._cost
 
         if new_cost < old_cost:
-            cls.nums[binary_op(i, j)]._ast = candidate_ast
+            self.nums[binary_op(i, j)]._ast = candidate_ast
 
-    class classproperty(object):
-        def __init__(self, f):
-            self.f = f
+    @property
+    def _cost(self):
+        return sum(num._cost for num in self.nums.values())
 
-        def __get__(self, obj, owner):
-            return self.f(owner)
-
-    @classproperty
-    def _cost(cls):
-        return sum(num._cost for num in cls.nums.values())
-
-    @classmethod
-    def save(cls, out_filepath: Path):
-        asts = {n: cls.nums[n]._ast for n in cls.nums}
+    def save(self, out_filepath: Path):
+        asts = {n: self.nums[n]._ast for n in self.nums}
         with out_filepath.open('wb') as f:
             pickle.dump(asts, f)
 
-    @classmethod
-    def load(cls, filepath: Path) -> Dict[int, BaseNumberAst]:
+    @staticmethod
+    def load(filepath: Path) -> Dict[int, BaseNumberAst]:
         with filepath.open('rb') as f:
             asts = pickle.load(f)
         return asts
 
 
 if __name__ == '__main__':
-
     PROJECT_ROOT: Path = Path(__file__).parent.parent
-
     numbers_filepath = PROJECT_ROOT / 'numbers.pk'
 
-    PushNumberOptimizer.optimize()
+    opt = PushNumberOptimizer(max_num=128)
+
+    print(f'Round 0: cost={opt._cost}')
+
+    optimizations = [opt._optimize_pow, opt._optimize_mult, opt._optimize_add] * 2
+    for i, optimize in enumerate(optimizations, 1):
+        optimize()
+        print(f'Round {i}: cost={opt._cost}, {optimize.__name__}')
 
     print()
     print(f'Saving numbers to {numbers_filepath}')
-    PushNumberOptimizer.save(numbers_filepath)
+    opt.save(numbers_filepath)
 
     print()
     PushNumber.load_numbers(numbers_filepath)
-    for n in range(1, PushNumberOptimizer.MAX_NUM + 1):
+    for n in range(1, opt.max_num + 1):
         num = PushNumber(n)
         print(f'{n} = {num.decomposition:28} cost={num._cost}')
