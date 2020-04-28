@@ -108,11 +108,11 @@ class BinaryNumberAst(BaseNumberAst):
 
     def __str__(self):
         n1_str = str(self.n1)
-        if self.n1._precedence < self._precedence:
+        if self.n1._precedence <= self._precedence:
             n1_str = '(' + n1_str + ')'
 
         n2_str = str(self.n2)
-        if self.n2._precedence < self._precedence:
+        if self.n2._precedence <= self._precedence:
             n2_str = '(' + n2_str + ')'
 
         return f'{n1_str} {self._binary_op_str} {n2_str}'

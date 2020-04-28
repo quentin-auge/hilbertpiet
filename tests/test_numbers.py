@@ -105,5 +105,5 @@ def test_numbers_consistency():
     numbers_filepath = MODULE_ROOT / 'data' / 'numbers.pkl'
 
     PushNumber.load_numbers(numbers_filepath)
-    for n in range(1, 131):
+    for n in range(1, 10000):
         assert eval(PushNumber(n).decomposition) == n
