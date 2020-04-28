@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import pytest
 
 from piet.context import Context
-from piet.numbers import UnaryNumberAst
+from piet.numbers import PushNumber, UnaryNumberAst
 
 
 def test_str():
@@ -69,3 +71,12 @@ def test_pow():
 def test_pow_str():
     n1, n2 = 3, 4
     assert str(UnaryNumberAst(n1) ** UnaryNumberAst(n2)) == '3 ** 4'
+
+
+def test_numbers_consistency():
+    MODULE_ROOT: Path = Path(__file__).parent.parent / 'piet'
+    numbers_filepath = MODULE_ROOT / 'piet_numbers.pkl'
+
+    PushNumber.load_numbers(numbers_filepath)
+    for n in range(1, 131):
+        assert eval(PushNumber(n).decomposition) == n
