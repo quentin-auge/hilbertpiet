@@ -10,7 +10,7 @@ setup(name='piet',
       license='closed',
       packages=find_packages(),
 
-      package_data={'piet': ['piet_numbers.pkl']},
+      package_data={'piet': ['data/piet_numbers.pkl']},
 
       python_requires='>=3.7',
 
@@ -23,7 +23,7 @@ setup(name='piet',
 
       entry_points={
           'console_scripts': [
-              'piet = piet.run:main',
+              'piet = piet.cli.run:main',
               'optimize-piet-numbers = piet.cli.optimize_numbers:main'
           ]
       })

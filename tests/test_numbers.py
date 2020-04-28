@@ -75,7 +75,7 @@ def test_pow_str():
 
 def test_numbers_consistency():
     MODULE_ROOT: Path = Path(__file__).parent.parent / 'piet'
-    numbers_filepath = MODULE_ROOT / 'piet_numbers.pkl'
+    numbers_filepath = MODULE_ROOT / 'data' / 'numbers.pkl'
 
     PushNumber.load_numbers(numbers_filepath)
     for n in range(1, 131):

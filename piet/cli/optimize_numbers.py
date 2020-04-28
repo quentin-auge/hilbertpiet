@@ -5,7 +5,7 @@ from piet.numbers import PushNumber, PushNumberOptimizer
 
 def main():
     PROJECT_ROOT: Path = Path(__file__).parent.parent
-    numbers_filepath = PROJECT_ROOT / 'piet_numbers.pkl'
+    numbers_filepath = PROJECT_ROOT / 'data' / 'numbers.pkl'
 
     opt = PushNumberOptimizer(max_num=128)
 
