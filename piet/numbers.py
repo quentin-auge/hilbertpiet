@@ -177,7 +177,7 @@ class PushNumberOptimizer:
 
     def _optimize_pow(self):
         for i in range(2, int(sqrt(self.max_num) + 1)):
-            for j in range(i, int(log(self.max_num, i) + 1)):
+            for j in range(2, int(log(self.max_num, i) + 1)):
                 self._step(operator.pow, i, j)
 
     def _step(self, binary_op, i: int, j: int):
