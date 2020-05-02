@@ -1,7 +1,8 @@
-import abc
-import operator
 from copy import deepcopy
 from dataclasses import dataclass, fields
+
+import abc
+import operator
 
 from piet.context import Context
 
@@ -108,3 +109,13 @@ class Multiply(BinaryOp):
 
 class Divide(BinaryOp):
     binary_op = operator.floordiv
+
+
+class Pointer(Op):
+    def _call(self, context: Context) -> Context:
+        if context.value <= 0:
+            raise RuntimeError(f'Invalid non-positive push value {context.value}')
+
+        context.dp += context.value
+        context.value = 1
+        return context

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import pytest
 
 from piet.context import Context
-from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op, Push, Resize, Substract
+from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op, Pointer, Push, Resize, Substract
 
 
 def test_ops_purity():
@@ -143,3 +143,24 @@ def test_divide():
     context = Context(stack=[1, 20, 3])
     expected_context = Context(stack=[1, 6])
     assert op(context) == expected_context
+
+
+def test_pointer():
+    op = Pointer()
+    context = Context(stack=[1, 2, 3], value=4, dp=1)
+    expected_context = Context(stack=[1, 2, 3], value=1, dp=5)
+    assert op(context) == expected_context
+
+
+def test_pointer_null_value():
+    op = Pointer()
+    context = Context()
+    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+        print(op(context))
+
+
+def test_pointer_negative_value():
+    op = Pointer()
+    context = Context(value=-4)
+    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+        print(op(context))
