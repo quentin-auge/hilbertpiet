@@ -155,12 +155,12 @@ def test_pointer():
 def test_pointer_null_value():
     op = Pointer()
     context = Context()
-    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+    with pytest.raises(RuntimeError, match='Invalid non-positive pointer value'):
         print(op(context))
 
 
 def test_pointer_negative_value():
     op = Pointer()
     context = Context(value=-4)
-    with pytest.raises(RuntimeError, match='Invalid non-positive push value'):
+    with pytest.raises(RuntimeError, match='Invalid non-positive pointer value'):
         print(op(context))

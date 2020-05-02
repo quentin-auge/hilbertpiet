@@ -114,7 +114,7 @@ class Divide(BinaryOp):
 class Pointer(Op):
     def _call(self, context: Context) -> Context:
         if context.value <= 0:
-            raise RuntimeError(f'Invalid non-positive push value {context.value}')
+            raise RuntimeError(f'Invalid non-positive pointer value {context.value}')
 
         context.dp += context.value
         context.value = 1
