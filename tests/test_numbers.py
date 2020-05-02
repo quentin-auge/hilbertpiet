@@ -130,7 +130,7 @@ def test_pow_str():
     assert str(UnaryNumberAst(n1) ** UnaryNumberAst(n2)) == f'{n1} ** {n2}'
 
 
-def test_numbers_consistency():
+def test_push_number():
     MODULE_ROOT: Path = Path(__file__).parent.parent / 'piet'
     numbers_filepath = MODULE_ROOT / 'data' / 'numbers.pkl'
 
