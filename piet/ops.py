@@ -26,7 +26,7 @@ class Op:
         raise NotImplementedError
 
     @property
-    def _cost(self):
+    def size(self):
         return 1
 
     def __str__(self):
@@ -59,7 +59,7 @@ class Resize(Op):
         self.value = value
 
     @property
-    def _cost(self):
+    def size(self):
         return self.value - 1
 
     def _call(self, context: Context) -> Context:

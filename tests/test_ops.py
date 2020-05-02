@@ -51,13 +51,13 @@ def test_str():
     assert str(op) == "DummyOp 2 'e' 1"
 
 
-@pytest.mark.parametrize('op,expected_cost', [
+@pytest.mark.parametrize('op,expected_size', [
     (Init(), 1), (Resize(1), 0), (Resize(2), 1), (Resize(3), 2),
     (Push(), 1), (Duplicate(), 1), (Add(), 1), (Substract(), 1),
     (Multiply(), 1), (Divide(), 1), (Pointer(), 1)
 ])
-def test_cost(op, expected_cost):
-    assert op._cost == expected_cost
+def test_size(op, expected_size):
+    assert op.size == expected_size
 
 
 def test_init():

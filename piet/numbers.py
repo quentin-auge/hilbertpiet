@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import abc
 import operator
 import pickle
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
@@ -27,6 +28,10 @@ class PushNumber(Macro):
         self._ast = self.__asts.get(n, UnaryNumberAst(n))
 
     @property
+    def _cost(self) -> int:
+        return self.size
+
+    @property
     def ops(self) -> List[Op]:
         return [self._ast]
 
@@ -44,6 +49,10 @@ class BaseNumberAst(Macro):
     @abc.abstractmethod
     def ops(self) -> List[Op]:
         raise NotImplementedError
+
+    @property
+    def _cost(self) -> int:
+        return self.size
 
     def __add__(self, other: BaseNumberAst) -> BaseNumberAst:
         return AddNumberAst(self, other)

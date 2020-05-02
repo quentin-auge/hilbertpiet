@@ -23,8 +23,8 @@ class Macro(Op):
 
 
     @property
-    def _cost(self):
-        return sum(op._cost for op in self.ops)
+    def size(self):
+        return sum(op.size for op in self.ops)
 
     @property
     @abc.abstractmethod

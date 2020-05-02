@@ -1,13 +1,8 @@
-from pathlib import Path
-
 import pytest
+from pathlib import Path
 
 from piet.context import Context
 from piet.numbers import PushNumber, UnaryNumberAst
-
-
-def test_str():
-    assert str(UnaryNumberAst(19)) == '19'
 
 
 def assert_consistent_number(number: UnaryNumberAst, n: int):
@@ -18,6 +13,11 @@ def assert_consistent_number(number: UnaryNumberAst, n: int):
 @pytest.mark.parametrize('n', [1, 2, 3, 5])
 def test_unary(n):
     assert_consistent_number(UnaryNumberAst(n), n)
+
+
+@pytest.mark.parametrize('n', [1, 2, 3, 5])
+def test_unary_cost(n):
+    assert UnaryNumberAst(n)._cost == (n - 1) + 1
 
 
 @pytest.mark.parametrize('n', [1, 2, 3, 5])
@@ -36,9 +36,14 @@ def test_add():
     assert_consistent_number(number, expected)
 
 
+def test_add_cost():
+    n1, n2 = 16, 4
+    assert (UnaryNumberAst(n1) + UnaryNumberAst(n2))._cost == n1 + n2 + 1
+
+
 def test_add_str():
     n1, n2 = 16, 4
-    assert str(UnaryNumberAst(n1) + UnaryNumberAst(n2)) == '16 + 4'
+    assert str(UnaryNumberAst(n1) + UnaryNumberAst(n2)) == f'{n1} + {n2}'
 
 
 def test_sub():
@@ -52,9 +57,14 @@ def test_sub():
     assert_consistent_number(number, expected)
 
 
+def test_sub_cost():
+    n1, n2 = 16, 4
+    assert (UnaryNumberAst(n1) - UnaryNumberAst(n2))._cost == n1 + n2 + 1
+
+
 def test_sub_str():
     n1, n2 = 16, 4
-    assert str(UnaryNumberAst(n1) - UnaryNumberAst(n2)) == '16 - 4'
+    assert str(UnaryNumberAst(n1) - UnaryNumberAst(n2)) == f'{n1} - {n2}'
 
 
 def test_mul():
@@ -68,6 +78,16 @@ def test_mul():
     assert_consistent_number(number, expected)
 
 
+def test_mul_cost():
+    n1, n2 = 16, 4
+    assert (UnaryNumberAst(n1) * UnaryNumberAst(n2))._cost == n1 + n2 + 1
+
+
+def test_mult_str():
+    n1, n2 = 16, 4
+    assert str(UnaryNumberAst(n1) * UnaryNumberAst(n2)) == f'{n1} * {n2}'
+
+
 def test_div():
     n1, n2 = 20, 3
     expected = 6
@@ -79,9 +99,14 @@ def test_div():
     assert_consistent_number(number, expected)
 
 
-def test_mult_str():
-    n1, n2 = 16, 4
-    assert str(UnaryNumberAst(n1) * UnaryNumberAst(n2)) == '16 * 4'
+def test_div_cost():
+    n1, n2 = 20, 3
+    assert (UnaryNumberAst(n1) // UnaryNumberAst(n2))._cost == n1 + n2 + 1
+
+
+def test_div_str():
+    n1, n2 = 20, 3
+    assert str(UnaryNumberAst(n1) // UnaryNumberAst(n2)) == f'{n1} // {n2}'
 
 
 def test_pow():
@@ -95,9 +120,14 @@ def test_pow():
     assert_consistent_number(number, expected)
 
 
+def test_pow_cost():
+    n1, n2 = 3, 4
+    assert (UnaryNumberAst(n1) ** UnaryNumberAst(n2))._cost == n1 + 2 * (n2 - 1)
+
+
 def test_pow_str():
     n1, n2 = 3, 4
-    assert str(UnaryNumberAst(n1) ** UnaryNumberAst(n2)) == '3 ** 4'
+    assert str(UnaryNumberAst(n1) ** UnaryNumberAst(n2)) == f'{n1} ** {n2}'
 
 
 def test_numbers_consistency():

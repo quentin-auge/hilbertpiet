@@ -71,20 +71,20 @@ def test_expand_ops():
     assert expanded_ops_C.called
 
 
-def test_cost():
+def test_size():
     class A(DummyOp):
         @property
-        def _cost(self):
+        def size(self):
             return 2
 
     class B(DummyOp):
         @property
-        def _cost(self):
+        def size(self):
             return 3
 
     class C(DummyOp):
         @property
-        def _cost(self):
+        def size(self):
             return 4
 
     class TestMacro(Macro):
@@ -93,4 +93,4 @@ def test_cost():
             return [A(), B(), C()]
 
     macro = TestMacro()
-    assert macro._cost == 2 + 3 + 4
+    assert macro.size == 2 + 3 + 4
