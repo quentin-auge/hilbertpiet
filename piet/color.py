@@ -12,12 +12,7 @@ class Color:
     hue_codes = ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#0000FF', '#FF00FF']
 
     def __init__(self, hue: int, lightness: int):
-        while hue < 0:
-            hue += 6
         self.hue = hue % 6
-
-        while lightness < 0:
-            lightness += 6
         self.lightness = lightness % 3
 
     @classmethod
