@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from typing import List, Tuple
+from typing import List
 
 
 @dataclass()
@@ -11,7 +11,7 @@ class Context:
     dp: int
 
     def __init__(self, stack: List[int] = None, value: int = 0,
-                 position = complex(0, 0), dp: int = 0):
+                 position: complex = 0j, dp: int = 0):
         self.stack = stack or []
         self.value = value
         self.position = position
