@@ -136,4 +136,7 @@ def test_numbers_consistency():
 
     PushNumber.load_numbers(numbers_filepath)
     for n in range(1, 10000):
+        number = PushNumber(n)
+        assert_consistent_number(number, n)
+        assert number._cost == number._ast._cost
         assert eval(PushNumber(n).decomposition) == n
