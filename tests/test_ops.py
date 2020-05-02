@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
+import mock
 import pytest
 
 from piet.context import Context
@@ -147,20 +148,8 @@ def test_divide():
 
 def test_pointer():
     op = Pointer()
-    context = Context(stack=[1, 2, 3], value=4, dp=1)
-    expected_context = Context(stack=[1, 2, 3], value=1, dp=5)
-    assert op(context) == expected_context
 
-
-def test_pointer_null_value():
-    op = Pointer()
-    context = Context()
-    with pytest.raises(RuntimeError, match='Invalid non-positive pointer value'):
-        print(op(context))
-
-
-def test_pointer_negative_value():
-    op = Pointer()
-    context = Context(value=-4)
-    with pytest.raises(RuntimeError, match='Invalid non-positive pointer value'):
-        print(op(context))
+    context = Context(stack=[1, 2, 3])
+    with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
+        op(context)
+        mock_rotate_dp.assert_called_with(steps=3)
