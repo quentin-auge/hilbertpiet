@@ -8,6 +8,11 @@ from piet.context import Context
 
 
 def purify_call(call):
+    """
+    Transform an operation call that mutates a context into a pure function that creates
+    a new context (pure function).
+    """
+
     def wrapper(self, context) -> Context:
         new_context = deepcopy(context)
         return call(self, new_context)
@@ -17,6 +22,10 @@ def purify_call(call):
 
 @dataclass(eq=False)
 class Op:
+    """
+    A piet operation. Identifies with a codel, most of the time.
+    """
+
     @purify_call
     def __call__(self, context: Context) -> Context:
         return self._call(context)
@@ -27,6 +36,9 @@ class Op:
 
     @property
     def size(self):
+        """
+        Size of equivalent codel.
+        """
         return 1
 
     def __str__(self):
@@ -41,6 +53,13 @@ class Op:
 
 
 class Init(Op):
+    """
+    First operation/codel of the program.
+
+    Notes:
+        Requires input context to be empty, for good measure.
+    """
+
     def _call(self, context: Context) -> Context:
         if context != Context():
             raise RuntimeError(f'Invalid non-empty context: "{context}"')
@@ -51,6 +70,14 @@ class Init(Op):
 
 @dataclass(eq=False)
 class Resize(Op):
+    """
+    Sets the size of the previous codel and memorizes it as context value for the next operation.
+
+    Notes:
+        Not a real codel. Runtime knows how to handle it.
+        Checks context value is positive. Null/negative codel sizes make no sense.
+    """
+
     value: int
 
     def __init__(self, value: int):
@@ -68,6 +95,10 @@ class Resize(Op):
 
 
 class Push(Op):
+    """
+    Push the context value (i.e. the size of the previous codel) to the stack.
+    """
+
     def _call(self, context: Context) -> Context:
         if context.value <= 0:
             raise RuntimeError(f'Invalid non-positive push value {context.value}')
@@ -78,6 +109,10 @@ class Push(Op):
 
 
 class Duplicate(Op):
+    """
+    Pushes a copy of the top value on the stack on to the stack.
+    """
+
     def _call(self, context: Context) -> Context:
         x = context.stack.pop()
         context.stack.extend([x, x])
@@ -85,6 +120,10 @@ class Duplicate(Op):
 
 
 class BinaryOp(Op):
+    """
+    Convenience class for factorizing binary stack operations.
+    """
+
     binary_op = None
 
     def _call(self, context: Context) -> Context:
@@ -96,22 +135,41 @@ class BinaryOp(Op):
 
 
 class Add(BinaryOp):
+    """
+    Pop the top two values off the stack, add them, and push the result back on the stack.
+    """
     binary_op = operator.add
 
 
 class Substract(BinaryOp):
+    """
+    Pop the top two values off the stack, calculate the second top value minus the top value,
+    and push the result back on the stack.
+    """
     binary_op = operator.sub
 
 
 class Multiply(BinaryOp):
+    """
+    Pop the top two values off the stack, multiply them, and push the result back on the stack.
+    """
     binary_op = operator.mul
 
 
 class Divide(BinaryOp):
+    """
+    Pop the top two values off the stack, calculate the integer division of the second top value
+    by the top value, and push the result back on the stack.
+    """
     binary_op = operator.floordiv
 
 
 class Pointer(Op):
+    """
+    Pop the top value off the stack and rotate the directional pointer by 90° clockwise that many
+    steps (anticlockwise if negative).
+    """
+
     def _call(self, context: Context) -> Context:
         context.rotate_dp(steps=context.stack.pop())
         return context

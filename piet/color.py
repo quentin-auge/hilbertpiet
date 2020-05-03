@@ -5,6 +5,10 @@ from dataclasses import dataclass
 
 @dataclass
 class Color:
+    """
+    A codel color as defined in piet (i.e. a valid hue, and a valid level of lightness).
+    """
+
     hue: int
     lightness: int
 
@@ -17,6 +21,10 @@ class Color:
 
     @classmethod
     def from_name(cls, name: str) -> Color:
+        """
+        Generate :class:`Color` from human-readable color name.
+        """
+
         if name.startswith('light'):
             lightness, hue_name = 0, name[len('light'):]
         elif name.startswith('dark'):
@@ -33,6 +41,9 @@ class Color:
 
     @property
     def code(self) -> str:
+        """
+        RGB code of color (`#RRGGBB`).
+        """
 
         hue_code = self.hue_codes[self.hue]
 
@@ -48,6 +59,10 @@ class Color:
         return code
 
     def __str__(self) -> str:
+        """
+        Human-readable name of color.
+        """
+
         hue_name = self.hue_names[self.hue]
         if self.lightness == 0:
             return f'light{hue_name}'

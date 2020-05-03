@@ -14,12 +14,23 @@ from piet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substra
 
 @dataclass(eq=False)
 class PushNumber(Macro):
+    """
+    Push a given number on top of the context stack.
+
+    Attributes:
+        n: the produced number
+    """
+
     n: int
 
+    # Tree representation of a given set of numbers
     __asts = {}
 
     @classmethod
     def load_numbers(cls, filepath: Path):
+        """
+        Load tree representation of a set of numbers from a file.
+        """
         with filepath.open('rb') as f:
             cls.__asts = pickle.load(f)
 
@@ -29,18 +40,37 @@ class PushNumber(Macro):
 
     @property
     def _cost(self) -> int:
+        """
+        Cost of the number, i.e. number of codels required to produce it.
+        """
         return self.size
 
     @property
     def ops(self) -> List[Op]:
+        """
+        Representation of the number as a tree of piet operations.
+        """
         return [self._ast]
 
     @property
     def decomposition(self) -> str:
+        """
+        String representation of the tree as an arithmetic expression.
+        """
         return str(self._ast)
 
 
+@dataclass
 class BaseNumberAst(Macro):
+    """
+    Base class for node of piet operations tree producing a given number on top of the context
+    stack.
+
+    Attributes:
+        n: the number produced by the tree of operations
+    """
+
+    n: int
 
     def __init__(self, n: int):
         self.n = n
@@ -52,6 +82,9 @@ class BaseNumberAst(Macro):
 
     @property
     def _cost(self) -> int:
+        """
+        Cost of the number, i.e. number of codels required to produce it.
+        """
         return self.size
 
     def __add__(self, other: BaseNumberAst) -> BaseNumberAst:
@@ -71,6 +104,9 @@ class BaseNumberAst(Macro):
 
     @abc.abstractmethod
     def __str__(self):
+        """
+        String representation of the tree as an arithmetic expression.
+        """
         raise NotImplementedError
 
     @property
@@ -81,6 +117,11 @@ class BaseNumberAst(Macro):
 
 @dataclass(eq=False)
 class UnaryNumberAst(BaseNumberAst):
+    """
+    Leaf node of number tree, representing a number in the dumbest way possible
+    (resize previous codel + push).
+    """
+
     n: int
 
     def __init__(self, n: int):
@@ -100,7 +141,13 @@ class UnaryNumberAst(BaseNumberAst):
 
 @dataclass(eq=False)
 class BinaryNumberAst(BaseNumberAst):
+    """
+    Internal node of number tree, operating on its left and right child number nodes.
+    """
+
+    # Left child number node
     n1: BaseNumberAst
+    # Left child number node
     n2: BaseNumberAst
 
     _binary_op = None

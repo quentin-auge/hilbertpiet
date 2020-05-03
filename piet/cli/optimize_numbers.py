@@ -1,15 +1,25 @@
 from __future__ import annotations
 
+from math import log, sqrt
+
 import argparse
 import operator
 import pickle
-from math import log, sqrt
 from pathlib import Path
 
 from piet.numbers import PushNumber
 
 
 class PushNumberOptimizer:
+    """
+    Find the optimal tree representation of a set of numbers constructed from each others, in
+    terms of codels needed to produce the number on top of the context stack.
+
+    Attributes:
+        max_num: upper bound of the range of numbers to optimize (lower bound is 0).
+        nums: the optimized numbers.
+    """
+
     def __init__(self, max_num: int):
         self.max_num = max_num
         self.nums = {n: PushNumber(n) for n in range(1, max_num + 1)}
@@ -50,9 +60,15 @@ class PushNumberOptimizer:
 
     @property
     def _cost(self):
+        """
+        Total cost of the range of numbers.
+        """
         return sum(num._cost for num in self.nums.values())
 
     def save(self, out_filepath: Path):
+        """
+        Save tree representation of numbers into a file.
+        """
         asts = {n: self.nums[n]._ast for n in self.nums}
         with out_filepath.open('wb') as f:
             pickle.dump(asts, f)

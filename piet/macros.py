@@ -6,6 +6,10 @@ from piet.ops import Op
 
 
 class Macro(Op):
+    """
+    Represents a list of piet operations to be executed in sequence.
+    """
+
     def _call(self, context: Context) -> Context:
         for op in self.ops:
             context = op(context)
@@ -13,6 +17,11 @@ class Macro(Op):
 
     @property
     def expanded_ops(self) -> List[Op]:
+        """
+        Recursively get the primitive operations (of type :class:`piet.ops.Op`) represented by the
+        macro.
+        """
+
         expanded_ops = []
         for op in self.ops:
             if isinstance(op, Macro):
@@ -20,7 +29,6 @@ class Macro(Op):
             else:
                 expanded_ops += [op]
         return expanded_ops
-
 
     @property
     def size(self):

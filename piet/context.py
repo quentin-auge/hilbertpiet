@@ -5,6 +5,16 @@ from typing import List
 
 @dataclass()
 class Context:
+    """
+    A piet program execution context. To be mutated by operations (`class`:piet.ops.op).
+
+    Attributes:
+        stack: program stack after previous codel
+        value: size of previous codel, for `class`:piet.ops.Push operation
+        position: position of next codel
+        dp: directional pointer; indicated the direction of the next codel
+    """
+
     stack: List[int]
     value: int
     position: complex
@@ -25,6 +35,9 @@ class Context:
         self.dp = dp
 
     def rotate_dp(self, steps: int = 1):
+        """
+        Rotate directional pointer `steps` times by 90° clockwise.
+        """
         self.dp *= 1j ** steps
 
     def __str__(self):
