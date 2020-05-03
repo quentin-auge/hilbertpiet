@@ -52,11 +52,11 @@ class PushNumberOptimizer:
     def _step(self, binary_op, i: int, j: int):
         old_cost = self.nums[binary_op(i, j)]._cost
 
-        candidate_ast = binary_op(self.nums[i]._ast, self.nums[j]._ast)
-        new_cost = candidate_ast._cost
+        candidate_tree = binary_op(self.nums[i]._tree, self.nums[j]._tree)
+        new_cost = candidate_tree._cost
 
         if new_cost < old_cost:
-            self.nums[binary_op(i, j)]._ast = candidate_ast
+            self.nums[binary_op(i, j)]._tree = candidate_tree
 
     @property
     def _cost(self):
@@ -69,9 +69,9 @@ class PushNumberOptimizer:
         """
         Save tree representation of numbers into a file.
         """
-        asts = {n: self.nums[n]._ast for n in self.nums}
+        trees = {n: self.nums[n]._tree for n in self.nums}
         with out_filepath.open('wb') as f:
-            pickle.dump(asts, f)
+            pickle.dump(trees, f)
 
 
 def main():

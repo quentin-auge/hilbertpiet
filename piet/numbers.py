@@ -24,7 +24,7 @@ class PushNumber(Macro):
     n: int
 
     # Tree representation of a given set of numbers
-    __asts = {}
+    __trees = {}
 
     @classmethod
     def load_numbers(cls, filepath: Path):
@@ -32,11 +32,11 @@ class PushNumber(Macro):
         Load tree representation of a set of numbers from a file.
         """
         with filepath.open('rb') as f:
-            cls.__asts = pickle.load(f)
+            cls.__trees = pickle.load(f)
 
     def __init__(self, n: int):
         self.n = n
-        self._ast = self.__asts.get(n, UnaryNumberAst(n))
+        self._tree = self.__trees.get(n, UnaryNumberTree(n))
 
     @property
     def _cost(self) -> int:
@@ -50,18 +50,18 @@ class PushNumber(Macro):
         """
         Representation of the number as a tree of piet operations.
         """
-        return [self._ast]
+        return [self._tree]
 
     @property
     def decomposition(self) -> str:
         """
         String representation of the tree as an arithmetic expression.
         """
-        return str(self._ast)
+        return str(self._tree)
 
 
 @dataclass
-class BaseNumberAst(Macro):
+class BaseNumberTree(Macro):
     """
     Base class for node of piet operations tree producing a given number on top of the context
     stack.
@@ -87,20 +87,20 @@ class BaseNumberAst(Macro):
         """
         return self.size
 
-    def __add__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return AddNumberAst(self, other)
+    def __add__(self, other: BaseNumberTree) -> BaseNumberTree:
+        return AddNumberTree(self, other)
 
-    def __sub__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return SubNumberAst(self, other)
+    def __sub__(self, other: BaseNumberTree) -> BaseNumberTree:
+        return SubNumberTree(self, other)
 
-    def __mul__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return MultNumberAst(self, other)
+    def __mul__(self, other: BaseNumberTree) -> BaseNumberTree:
+        return MultNumberTree(self, other)
 
-    def __floordiv__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return DivNumberAst(self, other)
+    def __floordiv__(self, other: BaseNumberTree) -> BaseNumberTree:
+        return DivNumberTree(self, other)
 
-    def __pow__(self, other: BaseNumberAst) -> BaseNumberAst:
-        return PowNumberAst(self, other)
+    def __pow__(self, other: BaseNumberTree) -> BaseNumberTree:
+        return PowNumberTree(self, other)
 
     @abc.abstractmethod
     def __str__(self):
@@ -116,7 +116,7 @@ class BaseNumberAst(Macro):
 
 
 @dataclass(eq=False)
-class UnaryNumberAst(BaseNumberAst):
+class UnaryNumberTree(BaseNumberTree):
     """
     Leaf node of number tree, representing a number in the dumbest way possible
     (resize previous codel + push).
@@ -140,20 +140,20 @@ class UnaryNumberAst(BaseNumberAst):
 
 
 @dataclass(eq=False)
-class BinaryNumberAst(BaseNumberAst):
+class BinaryNumberTree(BaseNumberTree):
     """
     Internal node of number tree, operating on its left and right child number nodes.
     """
 
     # Left child number node
-    n1: BaseNumberAst
+    n1: BaseNumberTree
     # Left child number node
-    n2: BaseNumberAst
+    n2: BaseNumberTree
 
     _binary_op = None
     _binary_op_str = None
 
-    def __init__(self, n1: BaseNumberAst, n2: BaseNumberAst):
+    def __init__(self, n1: BaseNumberTree, n2: BaseNumberTree):
         self.n1, self.n2 = n1, n2
         super().__init__(self._binary_op(n1.n, n2.n))
 
@@ -179,7 +179,7 @@ class BinaryNumberAst(BaseNumberAst):
         raise NotImplementedError
 
 
-class AddNumberAst(BinaryNumberAst):
+class AddNumberTree(BinaryNumberTree):
     _binary_op = operator.add
     _binary_op_str = '+'
 
@@ -192,7 +192,7 @@ class AddNumberAst(BinaryNumberAst):
         return 1
 
 
-class SubNumberAst(BinaryNumberAst):
+class SubNumberTree(BinaryNumberTree):
     _binary_op = operator.sub
     _binary_op_str = '-'
 
@@ -205,7 +205,7 @@ class SubNumberAst(BinaryNumberAst):
         return 1
 
 
-class MultNumberAst(BinaryNumberAst):
+class MultNumberTree(BinaryNumberTree):
     _binary_op = operator.mul
     _binary_op_str = '*'
 
@@ -218,7 +218,7 @@ class MultNumberAst(BinaryNumberAst):
         return 2
 
 
-class DivNumberAst(BinaryNumberAst):
+class DivNumberTree(BinaryNumberTree):
     _binary_op = operator.floordiv
     _binary_op_str = '//'
 
@@ -231,7 +231,7 @@ class DivNumberAst(BinaryNumberAst):
         return 2
 
 
-class PowNumberAst(BinaryNumberAst):
+class PowNumberTree(BinaryNumberTree):
     _binary_op = operator.pow
     _binary_op_str = '**'
 
