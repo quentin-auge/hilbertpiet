@@ -120,6 +120,9 @@ class UnaryNumberTree(BaseNumberTree):
     """
     Leaf node of number tree, representing a number in the dumbest way possible
     (resize previous codel + push).
+
+    Notes:
+        Only valid for positive numbers.
     """
 
     n: int
