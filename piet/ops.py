@@ -72,8 +72,6 @@ class Init(Op):
     def _call(self, context: Context) -> Context:
         if context != Context():
             raise RuntimeError(f'Invalid non-empty context: "{context}"')
-
-        context.value = 1
         return context
 
 
@@ -117,7 +115,6 @@ class Push(Op):
             raise RuntimeError(f'Invalid non-positive push value {context.value}')
 
         context.stack.append(context.value)
-        context.value = 1
         return context
 
 

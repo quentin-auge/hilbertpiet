@@ -31,10 +31,10 @@ class Macro(Op):
         return expanded_ops
 
     @property
-    def size(self):
+    def size(self) -> int:
         return sum(op.size for op in self.ops)
 
     @property
     @abc.abstractmethod
-    def ops(self):
+    def ops(self) -> List[Op]:
         raise NotImplementedError
