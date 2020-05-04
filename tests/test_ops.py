@@ -5,7 +5,8 @@ import mock
 import pytest
 
 from piet.context import Context
-from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op, Pointer, Push, Resize, Substract
+from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op
+from piet.ops import Pointer, Pop, Push, Resize, Substract
 
 
 def test_ops_purity():
@@ -52,7 +53,7 @@ def test_str():
 
 @pytest.mark.parametrize('op,expected_size', [
     (Init(), 1), (Resize(1), 0), (Resize(2), 1), (Resize(3), 2),
-    (Push(), 1), (Duplicate(), 1), (Add(), 1), (Substract(), 1),
+    (Push(), 1), (Pop(), 1), (Duplicate(), 1), (Add(), 1), (Substract(), 1),
     (Multiply(), 1), (Divide(), 1), (Pointer(), 1)
 ])
 def test_size(op, expected_size):
@@ -60,6 +61,7 @@ def test_size(op, expected_size):
 
 
 @pytest.mark.parametrize('op,expected_stack', [
+    (Pop(), [2, 20]),
     (Duplicate(), [2, 20, 3, 3]),
     (Add(), [2, 23]),
     (Substract(), [2, 17]),
@@ -71,7 +73,7 @@ def test_context_stack(op, expected_stack):
     assert context.stack == expected_stack
 
 
-@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+@pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
 def test_context_value(op):
     context = Context(stack=[2, 20, 3], value=7)
     assert context.value == 7
@@ -80,14 +82,14 @@ def test_context_value(op):
     assert context.value == 1
 
 
-@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+@pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
 def test_context_position(op):
     with mock.patch.object(Context, 'update_position') as mock_update_position:
         op(Context(stack=[2, 20, 3]))
         mock_update_position.assert_called_with(steps=1)
 
 
-@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+@pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
 def test_context_dp(op):
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         op(Context(stack=[2, 20, 3]))

@@ -121,6 +121,16 @@ class Push(Op):
         return context
 
 
+class Pop(Op):
+    """
+    Pop the top value off the stack and discard it.
+    """
+
+    def _call(self, context: Context) -> Context:
+        context.stack.pop()
+        return context
+
+
 class Duplicate(Op):
     """
     Pushes a copy of the top value on the stack on to the stack.
