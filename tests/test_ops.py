@@ -11,29 +11,28 @@ from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op, Pointer, Push, 
 def test_ops_purity():
     class DummyOp(Op):
         def _call(self, context: Context) -> Context:
-            context.stack = [18]
-            context.value = 32
+            context.stack = [4, 5, 6]
             return context
 
     op = DummyOp()
 
-    context = Context(stack=[1, 2, 3], value=4)
+    context = Context(stack=[1, 2, 3])
     context1 = deepcopy(context)
     context2 = deepcopy(context)
 
-    expected_context = Context(stack=[18], value=32)
+    expected_mutated_context = Context(stack=[4, 5, 6])
 
     # `Op._call()` mutates the context
     mutated_context = op._call(context1)
     assert mutated_context is context1
-    assert mutated_context == expected_context
-    assert context1 == expected_context
+    assert mutated_context.stack == [4, 5, 6]
+    assert context1.stack == [4, 5, 6]
 
     # `Op.__call__()` creates a new context
     new_context = op(context2)
     assert new_context is not context2
-    assert new_context == expected_context
-    assert context2 == context
+    assert new_context.stack == [4, 5, 6]
+    assert context2.stack == [1, 2, 3]
 
 
 def test_str():
@@ -60,25 +59,74 @@ def test_size(op, expected_size):
     assert op.size == expected_size
 
 
+@pytest.mark.parametrize('op,expected_stack', [
+    (Duplicate(), [2, 20, 3, 3]),
+    (Add(), [2, 23]),
+    (Substract(), [2, 17]),
+    (Multiply(), [2, 60]),
+    (Divide(), [2, 6])
+])
+def test_context_stack(op, expected_stack):
+    context = op(Context(stack=[2, 20, 3]))
+    assert context.stack == expected_stack
+
+
+@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+def test_context_value(op):
+    context = Context(stack=[2, 20, 3], value=7)
+    assert context.value == 7
+
+    context = op(context)
+    assert context.value == 1
+
+
+@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+def test_context_position(op):
+    with mock.patch.object(Context, 'update_position') as mock_update_position:
+        op(Context(stack=[2, 20, 3]))
+        mock_update_position.assert_called_with(steps=1)
+
+
+@pytest.mark.parametrize('op', [Duplicate(), Add(), Substract(), Multiply(), Divide()])
+def test_context_dp(op):
+    with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
+        op(Context(stack=[2, 20, 3]))
+        mock_rotate_dp.assert_not_called()
+
+
 def test_init():
     op = Init()
     context = Context()
-    expected_context = Context(value=1)
+    expected_context = Context(value=1, position=1)
     assert op(context) == expected_context
 
 
-def test_init_nonempty_context():
+@pytest.mark.parametrize('context', [
+    pytest.param(Context(stack=[1, 2, 3]), id='stack'),
+    pytest.param(Context(value=4), id='value'),
+    pytest.param(Context(position=3 + 2j), id='position'),
+    pytest.param(Context(dp=-1j), id='dp')
+])
+def test_init_nonempty_context(context):
     op = Init()
-    context = Context(stack=[1, 2, 3], value=4)
     with pytest.raises(RuntimeError, match='Invalid non-empty context'):
         print(op(context))
 
 
-def test_resize():
-    op = Resize(5)
-    context = Context(stack=[1, 2, 3], value=4)
-    expected_context = Context(stack=[1, 2, 3], value=5)
-    assert op(context) == expected_context
+@pytest.mark.parametrize('value', [1, 2, 3])
+def test_resize(value):
+    op = Resize(value)
+
+    with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
+        with mock.patch.object(Context, 'update_position') as mock_update_position:
+            context = Context(stack=[2, 20, 3], value=1)
+
+            context = op(context)
+
+            assert context.stack == [2, 20, 3]
+            assert context.value == value
+            mock_rotate_dp.assert_not_called()
+            mock_update_position.assert_called_with(steps=value - 1)
 
 
 def test_resize_null_value():
@@ -91,11 +139,30 @@ def test_resize_negative_value():
         print(Resize(-4))
 
 
-def test_push():
+@pytest.mark.parametrize('initial_value', [0, 4])
+def test_resize_over_non_unitary_value(initial_value):
+    op = Resize(3)
+    context = Context(value=initial_value)
+    expected_msg = f"Can't set resize value 3 " \
+                   f"over non-unitary resize value {context.value}"
+    with pytest.raises(RuntimeError, match=expected_msg):
+        print(op(context))
+
+
+@pytest.mark.parametrize('value', [4, 5, 6])
+def test_push(value):
     op = Push()
-    context = Context(stack=[1, 2, 3], value=4)
-    expected_context = Context(stack=[1, 2, 3, 4], value=1)
-    assert op(context) == expected_context
+
+    with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
+        with mock.patch.object(Context, 'update_position') as mock_update_position:
+            context = Context(stack=[2, 20, 3], value=value)
+
+            context = op(context)
+
+            assert context.stack == [2, 20, 3, value]
+            assert context.value == 1
+            mock_rotate_dp.assert_not_called()
+            mock_update_position.assert_called_with(steps=1)
 
 
 def test_push_null_value():
@@ -112,45 +179,17 @@ def test_push_negative_value():
         print(op(context))
 
 
-def test_duplicate():
-    op = Duplicate()
-    context = Context(stack=[1, 2, 3])
-    expected_context = Context(stack=[1, 2, 3, 3])
-    assert op(context) == expected_context
-
-
-def test_add():
-    op = Add()
-    context = Context(stack=[1, 2, 3])
-    expected_context = Context(stack=[1, 5])
-    assert op(context) == expected_context
-
-
-def test_substract():
-    op = Substract()
-    context = Context(stack=[1, 5, 2])
-    expected_context = Context(stack=[1, 3])
-    assert op(context) == expected_context
-
-
-def test_multiply():
-    op = Multiply()
-    context = Context(stack=[1, 2, 3, 4])
-    expected_context = Context(stack=[1, 2, 12])
-    assert op(context) == expected_context
-
-
-def test_divide():
-    op = Divide()
-    context = Context(stack=[1, 20, 3])
-    expected_context = Context(stack=[1, 6])
-    assert op(context) == expected_context
-
-
-def test_pointer():
+@pytest.mark.parametrize('stack_value', list(range(-4, 5)))
+def test_pointer(stack_value):
     op = Pointer()
 
-    context = Context(stack=[1, 2, 3])
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
-        op(context)
-        mock_rotate_dp.assert_called_with(steps=3)
+        with mock.patch.object(Context, 'update_position') as mock_update_position:
+            context = Context(stack=[20, 3, stack_value])
+
+            context = op(context)
+
+            assert context.stack == [20, 3]
+            assert context.value == 1
+            mock_rotate_dp.assert_called_with(steps=stack_value)
+            mock_update_position.assert_called_with(steps=1)

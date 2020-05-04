@@ -34,7 +34,13 @@ class Context:
 
         self.dp = dp
 
-    def rotate_dp(self, steps: int = 1):
+    def update_position(self, steps: int):
+        """
+        Move position `steps` times in the direction of dp.
+        """
+        self.position += steps * self.dp
+
+    def rotate_dp(self, steps: int):
         """
         Rotate directional pointer `steps` times by 90° clockwise.
         """

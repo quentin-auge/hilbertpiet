@@ -18,7 +18,7 @@ from piet.numbers import PushNumber, UnaryNumberTree
 ])
 def test_number_tree_consistency(tree, n):
     assert tree.n == n
-    assert tree(Context()).stack == [n]
+    assert tree(Context(value=1)).stack == [n]
 
 
 @pytest.mark.parametrize('tree,expected', [
@@ -56,6 +56,6 @@ def test_push_number():
     PushNumber.load_numbers(numbers_filepath)
     for n in range(1, 10000):
         number = PushNumber(n)
-        assert number(Context()).stack == [n]
+        assert number(Context(value=1)).stack == [n]
         assert number._cost == number._tree._cost
         assert eval(PushNumber(n).decomposition) == n

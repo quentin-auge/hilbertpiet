@@ -1,8 +1,7 @@
-from copy import deepcopy
-from dataclasses import dataclass, fields
-
 import abc
 import operator
+from copy import deepcopy
+from dataclasses import dataclass, fields
 
 from piet.context import Context
 
@@ -28,7 +27,17 @@ class Op:
 
     @purify_call
     def __call__(self, context: Context) -> Context:
-        return self._call(context)
+
+        context = self._call(context)
+
+        # Assume using Resize operation is the only way to set codel size
+        if not isinstance(self, Resize):
+            # Hence, all other operations are codels of size 1
+            context.value = 1
+
+        context.update_position(steps=self.size)
+
+        return context
 
     @abc.abstractmethod
     def _call(self, context: Context) -> Context:
@@ -90,6 +99,10 @@ class Resize(Op):
         return self.value - 1
 
     def _call(self, context: Context) -> Context:
+        if context.value != 1:
+            raise RuntimeError(f"Can't set resize value {self.value} "
+                               f"over non-unitary resize value {context.value}")
+
         context.value = self.value
         return context
 
