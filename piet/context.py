@@ -13,18 +13,21 @@ class Context:
         value: size of previous codel, for `class`:piet.ops.Push operation
         position: position of next codel
         dp: directional pointer; indicated the direction of the next codel
+        output: stdout of the program
     """
 
     stack: List[int]
     value: int
     position: complex
     dp: complex
+    output: str
 
     _DPS_VALUES = [1, 1j, -1, -1j]
     _DPS_STR = ['🡺', '🡻', '🡸', '🡹']
 
     def __init__(self, stack: List[int] = None, value: int = 0,
-                 position: complex = 0j, dp: complex = 1):
+                 position: complex = 0j, dp: complex = 1,
+                 output: str = ''):
         self.stack = stack or []
         self.value = value
         self.position = position
@@ -33,6 +36,7 @@ class Context:
             raise ValueError(f'Invalid dp value: "{dp}"')
 
         self.dp = dp
+        self.output = output
 
     def update_position(self, steps: int):
         """
@@ -52,5 +56,6 @@ class Context:
 
     def __deepcopy__(self, _):
         copy = Context(stack=list(self.stack), value=self.value,
-                       position=self.position, dp=self.dp)
+                       position=self.position, dp=self.dp,
+                       output=self.output)
         return copy

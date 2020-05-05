@@ -90,15 +90,17 @@ def test_uturn(dp, clockwise):
     op = UTurnClockwise() if clockwise else UTurnAntiClockwise()
     context = op(context)
 
-    # Test resulting context
     assert op.size == expected_size
+
+    # Test resulting context
 
     assert context.stack == original_stack
     assert context.value == 1
     assert context.value == 1
     assert context.position == expected_position
-
     assert context.dp == -original_dp
+    assert context.output == ''
+
 
 
 @pytest.mark.parametrize('clockwise', clockwise_params)
@@ -121,6 +123,7 @@ def test_no_op(length):
     assert context.stack == [2, 20, 3]
     assert context.value == 1
     assert context.dp == 1j
+    assert context.output == ''
 
 
 @pytest.mark.parametrize('length', [-1, 0, 1])

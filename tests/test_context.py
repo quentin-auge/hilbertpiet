@@ -12,7 +12,7 @@ def test_init_invalid_dp(invalid_dp):
 
 
 def test_str():
-    c = Context(stack=[1, 2, 3], position=5 + 8j, value=4)
+    c = Context(stack=[1, 2, 3], position=5 + 8j, value=4, output='ignored')
     assert str(c) == '[1, 2, 3] 4 (5+8j) 🡺'
 
 

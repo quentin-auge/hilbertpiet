@@ -68,6 +68,13 @@ def test_context_dp(op):
         mock_rotate_dp.assert_not_called()
 
 
+@pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
+def test_context_output(op):
+    context = Context(stack=[2, 20, 3])
+    context = op(context)
+    assert context.output == ''
+
+
 def test_init():
     op = Init()
     context = Context()
@@ -101,6 +108,7 @@ def test_resize(value):
             assert context.value == value
             mock_rotate_dp.assert_not_called()
             mock_update_position.assert_called_with(steps=value - 1)
+            assert context.output == ''
 
 
 def test_resize_null_value():
@@ -137,6 +145,7 @@ def test_push(value):
             assert context.value == 1
             mock_rotate_dp.assert_not_called()
             mock_update_position.assert_called_with(steps=1)
+            assert context.output == ''
 
 
 def test_push_null_value():
@@ -167,3 +176,4 @@ def test_pointer(stack_value):
             assert context.value == 1
             mock_rotate_dp.assert_called_with(steps=stack_value)
             mock_update_position.assert_called_with(steps=1)
+            assert context.output == ''
