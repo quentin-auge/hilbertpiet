@@ -3,7 +3,7 @@ from typing import List
 
 from piet.context import Context
 from piet.macros import Macro
-from piet.ops import Duplicate, Op, Pointer, Pop, Push, Resize
+from piet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
 
 
 def generate_path(n_iterations: int) -> str:
@@ -91,5 +91,42 @@ class UTurn(Macro):
 
         if not self.clockwise:
             ops = [Resize(3)] + ops
+
+        return ops
+
+
+@dataclass(eq=False)
+class NoOp(Macro):
+    """
+    A given number of codels that ultimately don't touch either the stack or dp.
+
+    Notes:
+        It is assumed the last codel before U-turn is anything but a `Resize` operation.
+    """
+
+    length: int
+
+    def __init__(self, length: int):
+        if length <= 1:
+            raise ValueError(f'Invalid no-op length: {length}')
+        self.length = length
+
+    def __call__(self, context: Context) -> Context:
+
+        if context.value != 1:
+            raise RuntimeError(f'Invalid value before no-op: {context.value}')
+
+        return super().__call__(context)
+
+    @property
+    def ops(self) -> List[Op]:
+        ops = [Push()]
+
+        if self.length % 2 == 1:
+            ops.append(Resize(2))
+
+        ops += [Duplicate(), Add()] * (self.length // 2 - 1)
+
+        ops.append(Pop())
 
         return ops
