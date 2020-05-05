@@ -53,7 +53,7 @@ def stretch_path(path: str, factor: int) -> str:
     return stretched_path
 
 
-@dataclass
+@dataclass(repr=False, eq=False)
 class UTurn(Macro):
     """
     Perform a U-turn with codels. Stack remains the same.
@@ -61,8 +61,7 @@ class UTurn(Macro):
     The operations are the following:
         * Setup:
             * Clockwise: 3 codels in the direction of dp
-            * Anticlockwise: 3 codels in the direction of dp
-            * Optional: `padding` extra codels if need be
+            * Anticlockwise: 5 codels in the direction of dp
         * First dp rotation: 1 codel
         * Move forward: 1 codel
         * Second dp rotation: 1 codel
@@ -72,7 +71,6 @@ class UTurn(Macro):
     """
 
     clockwise: bool
-    padding: int = 0
 
     def __call__(self, context: Context) -> Context:
 
@@ -86,13 +84,30 @@ class UTurn(Macro):
 
         ops = [Push(), Duplicate(), Duplicate(), Pointer(), Pop(), Pointer()]
 
-        if self.padding:
-            ops.insert(1, Resize(self.padding + 1))
-
         if not self.clockwise:
             ops = [Resize(3)] + ops
 
         return ops
+
+
+@dataclass(eq=False)
+class UTurnClockwise(UTurn):
+    """
+    Perform a clockwise U-turn with codels. Stack remains the same.
+    """
+
+    def __init__(self):
+        super().__init__(clockwise=True)
+
+
+@dataclass(eq=False)
+class UTurnAntiClockwise(UTurn):
+    """
+    Perform an anti-clockwise U-turn with codels. Stack remains the same.
+    """
+
+    def __init__(self):
+        super().__init__(clockwise=False)
 
 
 @dataclass(eq=False)
