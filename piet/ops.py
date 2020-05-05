@@ -46,6 +46,7 @@ class Op:
         return f'{cls} {params}'
 
 
+@dataclass
 class Init(Op):
     """
     First operation/codel of the program.
@@ -60,7 +61,7 @@ class Init(Op):
         return context
 
 
-@dataclass(eq=False)
+@dataclass
 class Resize(Op):
     """
     Sets the size of the previous codel and memorizes it as context value for the next operation.
@@ -90,6 +91,7 @@ class Resize(Op):
         return context
 
 
+@dataclass
 class Push(Op):
     """
     Push the context value (i.e. the size of the previous codel) to the stack.
@@ -103,6 +105,7 @@ class Push(Op):
         return context
 
 
+@dataclass
 class Pop(Op):
     """
     Pop the top value off the stack and discard it.
@@ -113,6 +116,7 @@ class Pop(Op):
         return context
 
 
+@dataclass
 class Duplicate(Op):
     """
     Pushes a copy of the top value on the stack on to the stack.
@@ -124,6 +128,7 @@ class Duplicate(Op):
         return context
 
 
+@dataclass(eq=False)
 class BinaryOp(Op):
     """
     Convenience class for factorizing binary stack operations.
@@ -139,6 +144,7 @@ class BinaryOp(Op):
         return context
 
 
+@dataclass
 class Add(BinaryOp):
     """
     Pop the top two values off the stack, add them, and push the result back on the stack.
@@ -146,6 +152,7 @@ class Add(BinaryOp):
     binary_op = operator.add
 
 
+@dataclass
 class Substract(BinaryOp):
     """
     Pop the top two values off the stack, calculate the second top value minus the top value,
@@ -154,6 +161,7 @@ class Substract(BinaryOp):
     binary_op = operator.sub
 
 
+@dataclass
 class Multiply(BinaryOp):
     """
     Pop the top two values off the stack, multiply them, and push the result back on the stack.
@@ -161,6 +169,7 @@ class Multiply(BinaryOp):
     binary_op = operator.mul
 
 
+@dataclass
 class Divide(BinaryOp):
     """
     Pop the top two values off the stack, calculate the integer division of the second top value
@@ -169,6 +178,7 @@ class Divide(BinaryOp):
     binary_op = operator.floordiv
 
 
+@dataclass
 class Pointer(Op):
     """
     Pop the top value off the stack and rotate the directional pointer by 90° clockwise that many
@@ -180,6 +190,7 @@ class Pointer(Op):
         return context
 
 
+@dataclass
 class OutNumber(Op):
     """
     Pop the top value off the stack and append it to output as number.
@@ -190,6 +201,7 @@ class OutNumber(Op):
         return context
 
 
+@dataclass
 class OutChar(Op):
     """
     Pop the top value off the stack and append it to output as character.

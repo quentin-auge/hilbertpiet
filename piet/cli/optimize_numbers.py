@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from math import log, sqrt
-
 import argparse
 import operator
 import pickle
+from math import log, sqrt
 from pathlib import Path
 
 from piet.numbers import PushNumber

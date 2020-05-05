@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List
 
 
-@dataclass()
+@dataclass
 class Context:
     """
     A piet program execution context. To be mutated by operations (`class`:piet.ops.op).

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import abc
 import operator
 import pickle
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
@@ -12,7 +11,7 @@ from piet.macros import Macro
 from piet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substract
 
 
-@dataclass(eq=False)
+@dataclass
 class PushNumber(Macro):
     """
     Push a given number on top of the context stack.
@@ -72,9 +71,6 @@ class BaseNumberTree(Macro):
 
     n: int
 
-    def __init__(self, n: int):
-        self.n = n
-
     @property
     @abc.abstractmethod
     def ops(self) -> List[Op]:
@@ -115,7 +111,7 @@ class BaseNumberTree(Macro):
         raise NotImplementedError
 
 
-@dataclass(eq=False)
+@dataclass
 class UnaryNumberTree(BaseNumberTree):
     """
     Leaf node of number tree, representing a number in the dumbest way possible
@@ -142,7 +138,7 @@ class UnaryNumberTree(BaseNumberTree):
         return 10
 
 
-@dataclass(eq=False)
+@dataclass
 class BinaryNumberTree(BaseNumberTree):
     """
     Internal node of number tree, operating on its left and right child number nodes.
@@ -182,6 +178,7 @@ class BinaryNumberTree(BaseNumberTree):
         raise NotImplementedError
 
 
+@dataclass(init=False)
 class AddNumberTree(BinaryNumberTree):
     _binary_op = operator.add
     _binary_op_str = '+'
@@ -195,6 +192,7 @@ class AddNumberTree(BinaryNumberTree):
         return 1
 
 
+@dataclass(init=False)
 class SubNumberTree(BinaryNumberTree):
     _binary_op = operator.sub
     _binary_op_str = '-'
@@ -208,6 +206,7 @@ class SubNumberTree(BinaryNumberTree):
         return 1
 
 
+@dataclass(init=False)
 class MultNumberTree(BinaryNumberTree):
     _binary_op = operator.mul
     _binary_op_str = '*'
@@ -221,6 +220,7 @@ class MultNumberTree(BinaryNumberTree):
         return 2
 
 
+@dataclass(init=False)
 class DivNumberTree(BinaryNumberTree):
     _binary_op = operator.floordiv
     _binary_op_str = '//'
@@ -234,6 +234,7 @@ class DivNumberTree(BinaryNumberTree):
         return 2
 
 
+@dataclass(init=False)
 class PowNumberTree(BinaryNumberTree):
     _binary_op = operator.pow
     _binary_op_str = '**'

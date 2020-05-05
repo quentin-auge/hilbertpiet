@@ -1,10 +1,12 @@
 import abc
+from dataclasses import dataclass
 from typing import List
 
 from piet.context import Context
 from piet.ops import Op
 
 
+@dataclass(eq=False)
 class Macro(Op):
     """
     Represents a list of piet operations to be executed in sequence.

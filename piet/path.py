@@ -1,12 +1,13 @@
+import abc
 from dataclasses import dataclass
-from typing import List
+from typing import List, Literal, Union
 
 from piet.context import Context
 from piet.macros import Macro
-from piet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
+from piet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
 
 
-@dataclass(repr=False, eq=False)
+@dataclass(eq=False)
 class UTurn(Macro):
     """
     Perform a U-turn with codels. Stack remains the same.
@@ -23,7 +24,10 @@ class UTurn(Macro):
         It is assumed the last codel before U-turn is anything but a `Resize` operation.
     """
 
-    clockwise: bool
+    @property
+    @abc.abstractmethod
+    def clockwise(self):
+        raise NotImplementedError
 
     def __call__(self, context: Context) -> Context:
 
@@ -43,27 +47,35 @@ class UTurn(Macro):
         return ops
 
 
-@dataclass(eq=False)
+@dataclass
 class UTurnClockwise(UTurn):
     """
     Perform a clockwise U-turn with codels. Stack remains the same.
     """
 
+    @property
+    def clockwise(self):
+        return True
+
     def __init__(self):
-        super().__init__(clockwise=True)
+        super().__init__()
 
 
-@dataclass(eq=False)
+@dataclass
 class UTurnAntiClockwise(UTurn):
     """
     Perform an anti-clockwise U-turn with codels. Stack remains the same.
     """
 
+    @property
+    def clockwise(self):
+        return False
+
     def __init__(self):
-        super().__init__(clockwise=False)
+        super().__init__()
 
 
-@dataclass(eq=False)
+@dataclass
 class NoOp(Macro):
     """
     A given number of codels that ultimately don't touch either the stack or dp.
