@@ -10,7 +10,7 @@ class Macro(Op):
     Represents a list of piet operations to be executed in sequence.
     """
 
-    def _call(self, context: Context) -> Context:
+    def __call__(self, context: Context) -> Context:
         for op in self.ops:
             context = op(context)
         return context
