@@ -4,7 +4,7 @@ from typing import List, Literal, Union
 
 from piet.context import Context
 from piet.macros import Macro
-from piet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
+from piet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
 
 
 @dataclass(eq=False)
@@ -157,3 +157,68 @@ def stretch_path(path: str, factor: int) -> str:
         i += 1
 
     return stretched_path
+
+
+def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
+    """
+    Map first path character with 'I' (init), clockwise U-turns in path with 'C',
+    anticlockwise U-turns with 'A', and remaining consecutive forwards with how many of them
+    they are.
+
+    Notes:
+        Crash if transformation is impossible:
+            * Can't map U-turns (not enough forwards to set up)
+            * Single remaining forwards (can't map no-op to them)
+
+    Examples:
+        >>> _map_path_u_turns('FFFFFF+F+FFFFF-F-FFFFF')
+        ['I', 2, 'C', 'A', 5]
+    """
+
+    # Integrate init in path (`I` character).
+    path = 'I ' + path[1:]
+
+    original_path = path
+
+    # Integrate clockwise U-turns in path (`C` characters).
+    # Make sure to replace the right number of path characters.
+    expexted_setup_cost = 3
+    assert UTurnClockwise().size == expexted_setup_cost + 3, 'Wrong UTurnClockwise cost'
+    path = path.replace('F' * expexted_setup_cost + '+F+', ' C ')
+
+    # Integrate anticlockwise U-turns in path (`A` characters).
+    # Make sure to replace the right number of path characters.
+    expexted_setup_cost = 5
+    assert UTurnAntiClockwise().size == expexted_setup_cost + 3, 'Wrong UTurnAntiClockwise cost'
+    path = path.replace('F' * expexted_setup_cost + '-F-', ' A ')
+
+    path = path.strip()
+
+    please_resize_path_msg = 'put in more iterations or stretch it'
+    please_resize_path_msg += f'\n  Original path: {original_path}'
+    please_resize_path_msg += f'\n  Transformed path: {path}'
+
+    if '-' in path or '+' in path:
+        # Unprocessed turns in resulting path means insufficient forwards quantity before
+        # a U-turn to set it up.
+        raise RuntimeError(f'Failed to replace all U-turns in path; {please_resize_path_msg}')
+
+    # Remove empty spaces from path
+    path = path.replace('  ', ' ')
+    path = path.strip()
+
+    transformed_path = path.split(' ')
+    for i in range(len(transformed_path)):
+        if transformed_path[i] not in ('I', 'C', 'A'):
+            forwards_num = len(transformed_path[i])
+            assert transformed_path[i] == 'F' * forwards_num, f'Ill-formed path: {path}'
+
+            if forwards_num == 1:
+                # No-ops (whose minimum length is 2) can't be mapped to single forwards.
+                raise RuntimeError(
+                    f'Generated single forwards in path; {please_resize_path_msg}')
+
+            # Replace consecutive forwards with how many of them they are
+            transformed_path[i] = forwards_num
+
+    return transformed_path

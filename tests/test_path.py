@@ -1,7 +1,8 @@
 import pytest
 
 from piet.context import Context
-from piet.path import NoOp, UTurnAntiClockwise, UTurnClockwise, stretch_path
+from piet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
+from piet.path import map_path_u_turns, stretch_path
 
 clockwise_params = [pytest.param(True, id='clockwise'), pytest.param(False, id='anticlockwise')]
 
@@ -136,3 +137,30 @@ def test_stretch_path_mixed_middle(n_forwards, factor):
     expected_path += '-p-' + 'F' * expected_n_forwards + '+'
 
     assert stretch_path(path, factor) == expected_path
+
+
+@pytest.mark.parametrize('path,expected', [
+    ('F', ['I']),
+    ('FF', RuntimeError('Generated single forwards in path')),
+    ('FFF', ['I', 2]),
+    ('FFFFFF', ['I', 5]),
+    ('FFFF+F+', ['I', 'C']),
+    ('FFFFFFF+F+', ['I', 3, 'C']),
+    ('FFF+F+', RuntimeError('Failed to replace all U-turns in path')),
+    ('FFFFF+F+', RuntimeError('Generated single forwards in path')),
+    ('FFFFFF-F-', ['I', 'A']),
+    ('FFFFFFFFF-F-', ['I', 3, 'A']),
+    ('FFFFF-F-', RuntimeError('Failed to replace all U-turns in path')),
+    ('FFFFFFF-F-', RuntimeError('Generated single forwards in path')),
+    ('FFFF+F+FFFFF-F-FFF+F+', ['I', 'C', 'A', 'C']),
+    ('FFFF+F+FFFFFFF-F-FFFFFF+F+FF', ['I', 'C', 2, 'A', 3, 'C', 2]),
+    ('FFFF+F+FFFFFF-F-FFFFFF+F+FF', RuntimeError('Generated single forwards in path')),
+    ('FFFF+F+FFFF-F-FFF+F+FF', RuntimeError('Failed to replace all U-turns in path'))
+])
+def test_map_path_u_turns(path, expected):
+    if isinstance(expected, Exception):
+        with pytest.raises(type(expected), match=str(expected)):
+            print(map_path_u_turns(path))
+
+    else:
+        assert map_path_u_turns(path) == expected
