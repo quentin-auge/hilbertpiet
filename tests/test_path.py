@@ -1,8 +1,9 @@
 import pytest
 
 from piet.context import Context
+from piet.ops import Init, Push, Resize
 from piet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
-from piet.path import map_path_u_turns, stretch_path
+from piet.path import map_ops_to_path, map_path_u_turns, stretch_path
 
 clockwise_params = [pytest.param(True, id='clockwise'), pytest.param(False, id='anticlockwise')]
 
@@ -161,6 +162,129 @@ def test_map_path_u_turns(path, expected):
     if isinstance(expected, Exception):
         with pytest.raises(type(expected), match=str(expected)):
             print(map_path_u_turns(path))
-
     else:
         assert map_path_u_turns(path) == expected
+
+
+@pytest.mark.parametrize('path,ops,expected', [
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init()],
+        [Init(),
+         NoOp(5), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise(),
+         NoOp(7), UTurnClockwise(),
+         NoOp(2)],
+        id='no_resize'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(2), Push()],
+        # All ops fit in first slot with 2 codels left
+        [Init(),
+         Push(), Resize(2), Push(), NoOp(2), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise(),
+         NoOp(7), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_2'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(3), Push()],
+        # All ops fit in first slot with 1 codel left -> illegal NoOp(1), carry last Push forward
+        # First slot now ends with Resize -> illegal, carry Resize forward
+        # Resize + Push fit in second slot with 3 codels left
+        [Init(), Push(), NoOp(4), UTurnClockwise(),
+         Resize(3), Push(), NoOp(3), UTurnAntiClockwise(),
+         NoOp(7), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_3'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(),
+         Push(), Resize(4), Push()],
+        # All ops fit in first slot with 0 codel left
+        [Init(), Push(), Resize(4), Push(), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise(),
+         NoOp(7), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_4'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(5), Push()],
+        # Push + Resize fit in first slot, but last op is Resize -> illegal, move Resize forward
+        # Resize + Push fit in second slot, with 1 codel left -> illegal NoOp(1), carry last Push
+        #   forward
+        # Second slot now ends with Resize -> illegal, carry Resize forward
+        # Resize + Push fit in third slot, with 2 codels left
+        [Init(),
+         Push(), NoOp(4), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise(),
+         Resize(5), Push(), NoOp(2), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_5'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(6), Push()],
+        # Push fits in first slot with 4 codels left
+        # Resize + Push fit in second slot with 0 codel left
+        [Init(), Push(), NoOp(4), UTurnClockwise(),
+         Resize(6), Push(), UTurnAntiClockwise(),
+         NoOp(7), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_6'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(7), Push()],
+        # Push fits in first slot with 4 codels left
+        # Resize fits in second slot, but last op is Resize -> illegal, carry Resize forward
+        # Resize + Push fit in second slot, with 0 codel left
+        [Init(), Push(), NoOp(4), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise(),
+         Resize(7), Push(), UTurnClockwise(),
+         NoOp(2)],
+        id='resize_7'
+    ),
+
+    pytest.param(
+        ['I', 5, 'C', 6, 'A', 7, 'C', 2],
+        [Init(), Push(), Resize(8), Push()],
+        # Push fits in first slot with 4 codels left
+        # Resize does not fit in second slot
+        # Resize fits in third slot, but last op is Resize -> illegal, move Resize forward
+        # Resize does not fit in fourth spot -> ERROR, no space left
+        RuntimeError('Not enough space in path'),
+        id='resize_8'
+    )
+])
+def test_map_ops_to_path(path, ops, expected):
+    if isinstance(expected, Exception):
+        with pytest.raises(type(expected), match=str(expected)):
+            print(map_ops_to_path(ops, path))
+    else:
+        mapped_ops = map_ops_to_path(ops, path)
+        assert mapped_ops == expected
+
+        # Transform a context with initial operations
+        context1 = Context()
+        for op in ops:
+            context1 = op(context1)
+
+        # Transform a context with mapped operations
+        context2 = Context()
+        for op in mapped_ops:
+            context2 = op(context2)
+
+        # Make sure the resulting stack is the same
+        assert context1.stack == context2.stack

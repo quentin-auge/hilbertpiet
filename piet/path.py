@@ -4,7 +4,7 @@ from typing import List, Literal, Union
 
 from piet.context import Context
 from piet.macros import Macro
-from piet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
+from piet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
 
 
 @dataclass(eq=False)
@@ -222,3 +222,69 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
             transformed_path[i] = forwards_num
 
     return transformed_path
+
+
+def map_ops_to_path(ops: List[Op], path: List[Union[Literal['C', 'A'], int]]) -> List[Op]:
+    """
+    Map a list of ops to empty slots in a path. Fill in the blanks with no-ops.
+
+    Mind the following rules:
+        * `NoOp(1)` is illegal
+        * It is illegal to place a `Resize` operation before a no-op or U-turn
+
+    Crash if path doesn't have enough space to accomodate the operations.
+    """
+
+    assert len(path) > 0
+    assert path[0] == 'I'
+
+    assert len(ops) > 0
+    assert isinstance(ops[0], Init)
+
+    mapped_ops = [Init()]
+    i_path, i_ops = 1, 1
+
+    while i_path < len(path):
+
+        token = path[i_path]
+
+        if token in ('C', 'A'):
+            uturn_ops = {'C': UTurnClockwise(), 'A': UTurnAntiClockwise()}
+            op = uturn_ops[token]
+            mapped_ops.append(op)
+
+        elif isinstance(token, int):
+            available_size = token
+
+            # Fill as many operation as possible in slot
+            while i_ops < len(ops) and ops[i_ops].size <= available_size:
+                mapped_ops.append(ops[i_ops])
+                available_size -= ops[i_ops].size
+                i_ops += 1
+
+            # `NoOp(1)` is illegal
+            if available_size == 1:
+                # Remove last operation from slot
+                available_size += mapped_ops.pop().size
+                i_ops -= 1
+
+            # It is illegal to place a `Resize` operation before a no-op or U-turn
+            if isinstance(mapped_ops[-1], Resize):
+                # Remove last operation from slot
+                available_size += mapped_ops.pop().size
+                i_ops -= 1
+
+            # Fill blanks in slot with no-ops
+            if available_size > 0:
+                assert available_size > 1
+                mapped_ops.append(NoOp(available_size))
+
+        else:
+            raise NotImplementedError
+
+        i_path += 1
+
+    if i_ops < len(ops):
+        raise RuntimeError(f'Not enough space in path; ops {ops[i_ops:]} not mapped')
+
+    return mapped_ops
