@@ -1,4 +1,3 @@
-from copy import deepcopy
 from dataclasses import dataclass
 
 import mock
@@ -7,33 +6,6 @@ import pytest
 from piet.context import Context
 from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op
 from piet.ops import Pointer, Pop, Push, Resize, Substract
-
-
-def test_ops_purity():
-    class DummyOp(Op):
-        def _call(self, context: Context) -> Context:
-            context.stack = [4, 5, 6]
-            return context
-
-    op = DummyOp()
-
-    context = Context(stack=[1, 2, 3])
-    context1 = deepcopy(context)
-    context2 = deepcopy(context)
-
-    expected_mutated_context = Context(stack=[4, 5, 6])
-
-    # `Op._call()` mutates the context
-    mutated_context = op._call(context1)
-    assert mutated_context is context1
-    assert mutated_context.stack == [4, 5, 6]
-    assert context1.stack == [4, 5, 6]
-
-    # `Op.__call__()` creates a new context
-    new_context = op(context2)
-    assert new_context is not context2
-    assert new_context.stack == [4, 5, 6]
-    assert context2.stack == [1, 2, 3]
 
 
 def test_str():

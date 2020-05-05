@@ -1,22 +1,8 @@
 import abc
 import operator
-from copy import deepcopy
 from dataclasses import dataclass, fields
 
 from piet.context import Context
-
-
-def purify_call(call):
-    """
-    Transform an operation call that mutates a context into a pure function that creates
-    a new context (pure function).
-    """
-
-    def wrapper(self, context) -> Context:
-        new_context = deepcopy(context)
-        return call(self, new_context)
-
-    return wrapper
 
 
 @dataclass(eq=False)
@@ -25,7 +11,6 @@ class Op:
     A piet operation. Identifies with a codel, most of the time.
     """
 
-    @purify_call
     def __call__(self, context: Context) -> Context:
 
         context = self._call(context)
