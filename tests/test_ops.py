@@ -5,7 +5,7 @@ import pytest
 
 from piet.context import Context
 from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op
-from piet.ops import Pointer, Pop, Push, Resize, Substract
+from piet.ops import OutChar, OutNumber, Pointer, Pop, Push, Resize, Substract
 
 
 def test_str():
@@ -177,3 +177,29 @@ def test_pointer(stack_value):
             mock_rotate_dp.assert_called_with(steps=stack_value)
             mock_update_position.assert_called_with(steps=1)
             assert context.output == ''
+
+
+@pytest.mark.parametrize('op', [
+    pytest.param(OutNumber(), id='OutNumber'),
+    pytest.param(OutChar(), id='OutChar')
+])
+def test_out_number(op):
+    with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
+        with mock.patch.object(Context, 'update_position') as mock_update_position:
+            context = Context(stack=[20, 3, 112, 111, 110], output='output is ')
+
+            context = op(context)
+            context = op(context)
+            context = op(context)
+
+            assert context.stack == [20, 3]
+            assert context.value == 1
+            mock_rotate_dp.assert_not_called()
+            mock_update_position.assert_called_with(steps=1)
+
+            if isinstance(op, OutNumber):
+                assert context.output == 'output is 110 111 112 '
+            elif isinstance(op, OutChar):
+                assert context.output == 'output is nop'
+            else:
+                raise NotImplementedError

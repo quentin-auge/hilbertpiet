@@ -178,3 +178,23 @@ class Pointer(Op):
     def _call(self, context: Context) -> Context:
         context.rotate_dp(steps=context.stack.pop())
         return context
+
+
+class OutNumber(Op):
+    """
+    Pop the top value off the stack and append it to output as number.
+    """
+
+    def _call(self, context: Context) -> Context:
+        context.output += f'{context.stack.pop()} '
+        return context
+
+
+class OutChar(Op):
+    """
+    Pop the top value off the stack and append it to output as character.
+    """
+
+    def _call(self, context: Context) -> Context:
+        context.output += chr(context.stack.pop())
+        return context
