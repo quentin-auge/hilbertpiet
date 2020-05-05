@@ -53,9 +53,3 @@ class Context:
     def __str__(self):
         dp_str = self._DPS_STR[self._DPS_VALUES.index(self.dp)]
         return f'{self.stack} {self.value} {self.position} {dp_str}'
-
-    def __deepcopy__(self, _):
-        copy = Context(stack=list(self.stack), value=self.value,
-                       position=self.position, dp=self.dp,
-                       output=self.output)
-        return copy
