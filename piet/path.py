@@ -112,6 +112,29 @@ class NoOp(Macro):
         return ops
 
 
+def _stretch_path(path: str) -> str:
+    """
+    Stretch a path so that `n > 2` consecutive forwards (`F`) become  `5 * n + 2` consecutive
+    forwards.
+    """
+
+    path += '$'
+    i = 0
+    stretched_path = ''
+    n_forward = 0
+    while i < len(path):
+        c = path[i] if path[i] != '$' else ''
+        if c != 'F':
+            forwards = 'F' * (n_forward * 5 + 2) if n_forward != 1 else 'F'
+            stretched_path += forwards + c
+            n_forward = 0
+        else:
+            n_forward += 1
+        i += 1
+
+    return stretched_path
+
+
 def generate_path(n_iterations: int) -> str:
     """
     Generate path as a string of turtle instructions to trace a Hilbert curve II after a given
@@ -134,29 +157,7 @@ def generate_path(n_iterations: int) -> str:
 
     path = path.replace('X', '').replace('Y', '')
 
-    return path
-
-
-def stretch_path(path: str, factor: int) -> str:
-    """
-    Stretch a path so that `n` consecutive forwards (`F`) become  `n * factor` consecutive forwards.
-    """
-
-    path += '$'
-    i = 0
-    stretched_path = ''
-    n_forward = 0
-    while i < len(path):
-        c = path[i] if path[i] != '$' else ''
-        if c != 'F':
-            forwards = 'F' * n_forward * factor if n_forward != 1 else 'F'
-            stretched_path += forwards + c
-            n_forward = 0
-        else:
-            n_forward += 1
-        i += 1
-
-    return stretched_path
+    return _stretch_path(path)
 
 
 def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
