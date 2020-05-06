@@ -128,7 +128,7 @@ class UnaryNumberTree(BaseNumberTree):
 
     @property
     def ops(self):
-        return [Resize(self.n), Push()]
+        return [Resize(self.n), Push()] if self.n != 1 else [Push()]
 
     def __str__(self):
         return str(self.n)

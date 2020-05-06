@@ -24,7 +24,8 @@ def test_str():
 
 
 @pytest.mark.parametrize('op,expected_size', [
-    (Init(), 1), (Resize(1), 0), (Resize(2), 1), (Resize(3), 2),
+    (Init(), 1),
+    (Resize(2), 1), (Resize(3), 2), (Resize(4), 3), (Resize(10), 9),
     (Push(), 1), (Pop(), 1), (Duplicate(), 1), (Add(), 1), (Substract(), 1),
     (Multiply(), 1), (Divide(), 1), (Pointer(), 1)
 ])
@@ -94,7 +95,7 @@ def test_init_nonempty_context(context):
         print(op(context))
 
 
-@pytest.mark.parametrize('value', [1, 2, 3])
+@pytest.mark.parametrize('value', [2, 3, 4, 10])
 def test_resize(value):
     op = Resize(value)
 
@@ -111,14 +112,10 @@ def test_resize(value):
             assert context.output == ''
 
 
-def test_resize_null_value():
+@pytest.mark.parametrize('size', [-4, 0, 1])
+def test_resize_invalid_size(size):
     with pytest.raises(ValueError, match='Invalid non-positive resize value'):
-        print(Resize(0))
-
-
-def test_resize_negative_value():
-    with pytest.raises(ValueError, match='Invalid non-positive resize value'):
-        print(Resize(-4))
+        print(Resize(size))
 
 
 @pytest.mark.parametrize('initial_value', [0, 4])

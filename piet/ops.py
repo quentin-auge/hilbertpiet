@@ -74,7 +74,7 @@ class Resize(Op):
     value: int
 
     def __init__(self, value: int):
-        if value <= 0:
+        if value <= 1:
             raise ValueError(f'Invalid non-positive resize value {value}')
         self.value = value
 
