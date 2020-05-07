@@ -2,13 +2,13 @@ import abc
 import operator
 from dataclasses import dataclass, fields
 
-from piet.context import Context
+from hilbertpiet.context import Context
 
 
 @dataclass(eq=False)
 class Op:
     """
-    A piet operation. Identifies with a codel, most of the time.
+    A Piet operation. Identifies with a codel, most of the time.
     """
 
     def __call__(self, context: Context) -> Context:

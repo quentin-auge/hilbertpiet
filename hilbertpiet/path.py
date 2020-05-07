@@ -2,9 +2,9 @@ import abc
 from dataclasses import dataclass
 from typing import List, Literal, Union
 
-from piet.context import Context
-from piet.macros import Macro
-from piet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
+from hilbertpiet.context import Context
+from hilbertpiet.macros import Macro
+from hilbertpiet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
 
 
 @dataclass(eq=False)

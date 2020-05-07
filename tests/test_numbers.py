@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from piet.context import Context
-from piet.numbers import PushNumber, UnaryNumberTree
+from hilbertpiet.context import Context
+from hilbertpiet.numbers import PushNumber, UnaryNumberTree
 
 
 @pytest.mark.parametrize('tree,n', [
@@ -50,7 +50,7 @@ def test_number_tree_cost(tree, expected):
 
 
 def test_push_number():
-    MODULE_ROOT: Path = Path(__file__).parent.parent / 'piet'
+    MODULE_ROOT: Path = Path(__file__).parent.parent / 'hilbertpiet'
     numbers_filepath = MODULE_ROOT / 'data' / 'numbers.pkl'
 
     PushNumber.load_numbers(numbers_filepath)

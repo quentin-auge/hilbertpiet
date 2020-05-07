@@ -1,6 +1,6 @@
 import pytest
 
-from piet.color import Color
+from hilbertpiet.color import Color
 
 hue_lightness_params = [(hue, lightness) for hue in range(7) for lightness in range(4)]
 

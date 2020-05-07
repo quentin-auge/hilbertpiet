@@ -6,11 +6,11 @@ from typing import List
 @dataclass
 class Context:
     """
-    A piet program execution context. To be mutated by operations (`class`:piet.ops.op).
+    A Piet program execution context. To be mutated by operations.
 
     Attributes:
         stack: program stack after previous codel
-        value: size of previous codel, for `class`:piet.ops.Push operation
+        value: size of previous codel, for push operation
         position: position of next codel
         dp: directional pointer; indicated the direction of the next codel
         output: stdout of the program

@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from piet.macros import Macro
-from piet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substract
+from hilbertpiet.macros import Macro
+from hilbertpiet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substract
 
 
 @dataclass
@@ -47,7 +47,7 @@ class PushNumber(Macro):
     @property
     def ops(self) -> List[Op]:
         """
-        Representation of the number as a tree of piet operations.
+        Representation of the number as a tree of Piet operations.
         """
         return [self._tree]
 
@@ -62,7 +62,7 @@ class PushNumber(Macro):
 @dataclass
 class BaseNumberTree(Macro):
     """
-    Base class for node of piet operations tree producing a given number on top of the context
+    Base class for node of Piet operations tree producing a given number on top of the context
     stack.
 
     Attributes:

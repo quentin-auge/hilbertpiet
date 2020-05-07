@@ -1,8 +1,8 @@
 from mock import MagicMock, PropertyMock
 
-from piet.context import Context
-from piet.macros import Macro
-from piet.ops import Op
+from hilbertpiet.context import Context
+from hilbertpiet.macros import Macro
+from hilbertpiet.ops import Op
 
 
 class DummyOp(Op):

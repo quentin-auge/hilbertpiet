@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import mock
 import pytest
 
-from piet.context import Context
-from piet.ops import Add, Divide, Duplicate, Init, Multiply, Op
-from piet.ops import OutChar, OutNumber, Pointer, Pop, Push, Resize, Substract
+from hilbertpiet.context import Context
+from hilbertpiet.ops import Add, Divide, Duplicate, Init, Multiply, Op
+from hilbertpiet.ops import OutChar, OutNumber, Pointer, Pop, Push, Resize, Substract
 
 
 def test_str():

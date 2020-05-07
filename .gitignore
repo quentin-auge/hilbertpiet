@@ -2,4 +2,4 @@
 .coverage
 .tox/
 __pycache__/
-piet.egg-info/
+hilbertpiet.egg-info/

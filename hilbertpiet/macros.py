@@ -2,14 +2,14 @@ import abc
 from dataclasses import dataclass
 from typing import List
 
-from piet.context import Context
-from piet.ops import Op
+from hilbertpiet.context import Context
+from hilbertpiet.ops import Op
 
 
 @dataclass(eq=False)
 class Macro(Op):
     """
-    Represents a list of piet operations to be executed in sequence.
+    Represents a list of Piet operations to be executed in sequence.
     """
 
     def __call__(self, context: Context) -> Context:
@@ -20,7 +20,7 @@ class Macro(Op):
     @property
     def expanded_ops(self) -> List[Op]:
         """
-        Recursively get the primitive operations (of type :class:`piet.ops.Op`) represented by the
+        Recursively get the primitive operations (of type :class:`hilbertpiet.ops.Op`) represented by the
         macro.
         """
 

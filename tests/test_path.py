@@ -1,9 +1,9 @@
 import pytest
 
-from piet.context import Context
-from piet.ops import Init, Push, Resize
-from piet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
-from piet.path import map_ops_to_path, map_path_u_turns
+from hilbertpiet.context import Context
+from hilbertpiet.ops import Init, Push, Resize
+from hilbertpiet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
+from hilbertpiet.path import map_ops_to_path, map_path_u_turns
 
 clockwise_params = [pytest.param(True, id='clockwise'), pytest.param(False, id='anticlockwise')]
 

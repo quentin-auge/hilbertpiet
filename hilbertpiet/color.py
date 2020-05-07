@@ -6,7 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class Color:
     """
-    A codel color as defined in piet (i.e. a valid hue, and a valid level of lightness).
+    A codel color as defined in Piet (i.e. a valid hue, and a valid level of lightness).
     """
 
     hue: int

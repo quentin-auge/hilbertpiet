@@ -1,6 +1,6 @@
 import pytest
 
-from piet.context import Context
+from hilbertpiet.context import Context
 
 
 @pytest.mark.parametrize('invalid_dp', [0, 2, 0j, 2j, 1 + 1j])

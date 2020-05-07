@@ -6,7 +6,7 @@ import pickle
 from math import log, sqrt
 from pathlib import Path
 
-from piet.numbers import PushNumber
+from hilbertpiet.numbers import PushNumber
 
 
 class PushNumberOptimizer:
