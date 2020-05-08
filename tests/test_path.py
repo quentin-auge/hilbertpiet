@@ -2,7 +2,7 @@ import pytest
 
 from hilbertpiet.context import Context
 from hilbertpiet.ops import Init, Push, Resize
-from hilbertpiet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
+from hilbertpiet.path import NoOp, NotEnoughSpace, UTurnAntiClockwise, UTurnClockwise
 from hilbertpiet.path import map_path_u_turns, map_program_to_path
 from hilbertpiet.run import Program
 
@@ -209,7 +209,7 @@ def test_map_path_u_turns(path, expected):
         # Resize does not fit in second slot
         # Resize fits in third slot, but last op is Resize -> illegal, move Resize forward
         # Resize does not fit in fourth spot -> ERROR, no space left
-        RuntimeError('Not enough space in path'),
+        NotEnoughSpace('Not enough space in path'),
         id='resize_8'
     )
 ])

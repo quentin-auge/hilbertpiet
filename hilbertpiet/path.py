@@ -226,6 +226,10 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
     return transformed_path
 
 
+class NotEnoughSpace(BaseException):
+    pass
+
+
 def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], int]]) -> Program:
     """
     Map a program (list of ops/macros) to empty slots in a path. Fill in the blanks with no-ops.
@@ -279,7 +283,7 @@ def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], in
 
     if i_ops < len(ops):
         remaining = len(ops) - i_ops
-        raise RuntimeError(f'Not enough space in path; {remaining} remaining operations')
+        raise NotEnoughSpace(f'Not enough space in path; {remaining} remaining operations')
 
     mapped_program = Program(mapped_ops)
 

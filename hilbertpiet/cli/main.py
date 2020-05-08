@@ -7,7 +7,7 @@ from pathlib import Path
 
 from hilbertpiet.numbers import PushNumber
 from hilbertpiet.ops import OutChar
-from hilbertpiet.path import generate_path, map_path_u_turns, map_program_to_path
+from hilbertpiet.path import NotEnoughSpace, generate_path, map_path_u_turns, map_program_to_path
 from hilbertpiet.run import Program
 
 LOGGER = logging.getLogger(__name__)
@@ -53,14 +53,28 @@ def main():
     LOGGER.info(f'{program.size} codels before mapping')
     LOGGER.debug(f'Piet operations = {program.ops}')
     LOGGER.debug(f'Expanded Piet operations = {program.expanded_ops}')
-    LOGGER.debug('')
+    LOGGER.info('')
 
     # Create path and map program
 
-    path = generate_path(iterations=6)
-    path = map_path_u_turns(path)
-    program = map_program_to_path(program, path)
+    # Fine-tune necessary number of Hilbert curve iterations within a certain range
+    max_iterations = 6
+    iterations = 1
+    success = False
+    while not success:
+        path = generate_path(iterations)
+        path = map_path_u_turns(path)
+        try:
+            program = map_program_to_path(program, path)
+        except NotEnoughSpace:
+            if iterations >= max_iterations:
+                raise
+            else:
+                iterations += 1
+        else:
+            success = True
 
+    LOGGER.info(f'{iterations} Hilbert curve iterations')
     LOGGER.info(f'{program.size} codels after mapping')
     LOGGER.debug(f'Piet operations = {program.ops}')
     LOGGER.debug(f'Expanded Piet operations = {program.expanded_ops}')
@@ -77,8 +91,9 @@ def main():
         # Indent output lines
         printable_output = '\n   ' + printable_output.replace('\n', '\n   ')
     LOGGER.debug('')
-    LOGGER.debug(f'Ouput: {printable_output}')
-    LOGGER.debug('')
+
+    LOGGER.info(f'Ouput: {printable_output}')
+    LOGGER.info('')
 
 
 if __name__ == '__main__':
