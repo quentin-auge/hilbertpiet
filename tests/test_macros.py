@@ -1,4 +1,7 @@
-from mock import MagicMock, PropertyMock
+from dataclasses import dataclass
+from typing import List
+
+import mock
 
 from hilbertpiet.context import Context
 from hilbertpiet.macros import Macro
@@ -7,90 +10,61 @@ from hilbertpiet.ops import Op
 
 class DummyOp(Op):
     def _call(self, context: Context) -> Context:
-        context.value += 1
-        context.stack.append(context.value)
         return context
 
 
-class DummyMacro(Macro):
+@dataclass
+class A(Op): pass
+
+
+@dataclass
+class B(Op): pass
+
+
+@dataclass
+class C(Op): pass
+
+
+class BC(Macro):
     @property
-    def ops(self):
-        return []
+    def ops(self) -> List[Op]:
+        return [B(), C()]
+
+
+class ABC(Macro):
+    @property
+    def ops(self) -> List[Op]:
+        return [A(), BC()]
+
+
+class CABCB(Macro):
+    @property
+    def ops(self) -> List[Op]:
+        return [C(), ABC(), B()]
 
 
 def test_call():
-    class A(DummyOp): pass
+    context1 = Context(stack=[1], value=1, position=1 + 1j, dp=1, output='one')
+    context2 = Context(stack=[2], value=2, position=2 + 2j, dp=1j, output='two')
+    context3 = Context(stack=[3], value=3, position=3 + 3j, dp=-1, output='three')
+    context4 = Context(stack=[4], value=4, position=4 + 4j, dp=-1j, output='four')
 
-    class B(DummyOp): pass
+    with mock.patch.object(A, '__call__', return_value=context2) as mock_call_A:
+        with mock.patch.object(B, '__call__', return_value=context3) as mock_call_B:
+            with mock.patch.object(C, '__call__', return_value=context4) as mock_call_C:
+                macro = ABC()
+                final_context = macro(context1)
 
-    class C(DummyOp): pass
+                mock_call_A.assert_called_once_with(context1)
+                mock_call_B.assert_called_once_with(context2)
+                mock_call_C.assert_called_once_with(context3)
 
-    A.__call__ = MagicMock(side_effect=DummyOp().__call__)
-    B.__call__ = MagicMock(side_effect=DummyOp().__call__)
-    C.__call__ = MagicMock(side_effect=DummyOp().__call__)
-
-    class TestMacro(Macro):
-        @property
-        def ops(self):
-            return [A(), B(), C()]
-
-    macro = TestMacro()
-    macro(Context())
-
-    A.__call__.assert_called()
-    B.__call__.assert_called()
-    C.__call__.assert_called()
+                assert final_context == context4
 
 
-def test_expand_ops():
-    class A(DummyMacro): pass
-
-    class B(DummyOp): pass
-
-    class C(DummyMacro): pass
-
-    expanded_ops_A = PropertyMock()
-    A.expanded_ops = expanded_ops_A
-
-    expanded_ops_B = PropertyMock()
-    B.expanded_ops = expanded_ops_B
-
-    expanded_ops_C = PropertyMock()
-    C.expanded_ops = expanded_ops_C
-
-    class TestMacro(Macro):
-        @property
-        def ops(self):
-            return [A(), B(), C()]
-
-    macro = TestMacro()
-    print(macro.expanded_ops)
-
-    assert expanded_ops_A.called
-    assert not expanded_ops_B.called
-    assert expanded_ops_C.called
+def test_expanded_ops():
+    assert CABCB().expanded_ops == [C(), A(), B(), C(), B()]
 
 
 def test_size():
-    class A(DummyOp):
-        @property
-        def size(self):
-            return 2
-
-    class B(DummyOp):
-        @property
-        def size(self):
-            return 3
-
-    class C(DummyOp):
-        @property
-        def size(self):
-            return 4
-
-    class TestMacro(Macro):
-        @property
-        def ops(self):
-            return [A(), B(), C()]
-
-    macro = TestMacro()
-    assert macro.size == 2 + 3 + 4
+    assert CABCB().size == 5
