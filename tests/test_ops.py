@@ -47,7 +47,7 @@ def test_context_stack(op, expected_stack):
 
 
 @pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
-def test_context_value(op):
+def test_set_unitary_context_value(op):
     context = Context(stack=[2, 20, 3], value=7)
     assert context.value == 7
 
@@ -56,24 +56,24 @@ def test_context_value(op):
 
 
 @pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
-def test_context_position(op):
+def test_incremented_context_position(op):
     with mock.patch.object(Context, 'update_position') as mock_update_position:
         op(Context(stack=[2, 20, 3]))
         mock_update_position.assert_called_with(steps=1)
 
 
 @pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
-def test_context_dp(op):
+def test_untouched_context_dp(op):
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         op(Context(stack=[2, 20, 3]))
         mock_rotate_dp.assert_not_called()
 
 
 @pytest.mark.parametrize('op', [Pop(), Duplicate(), Add(), Substract(), Multiply(), Divide()])
-def test_context_output(op):
-    context = Context(stack=[2, 20, 3])
+def test_untouched_context_output(op):
+    context = Context(stack=[2, 20, 3], output='toto')
     context = op(context)
-    assert context.output == ''
+    assert context.output == 'toto'
 
 
 def test_init():
@@ -101,7 +101,7 @@ def test_resize(value):
 
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         with mock.patch.object(Context, 'update_position') as mock_update_position:
-            context = Context(stack=[2, 20, 3], value=1)
+            context = Context(stack=[2, 20, 3], value=1, output='toto')
 
             context = op(context)
 
@@ -109,7 +109,7 @@ def test_resize(value):
             assert context.value == value
             mock_rotate_dp.assert_not_called()
             mock_update_position.assert_called_with(steps=value - 1)
-            assert context.output == ''
+            assert context.output == 'toto'
 
 
 @pytest.mark.parametrize('size', [-4, 0, 1])
@@ -134,7 +134,7 @@ def test_push(value):
 
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         with mock.patch.object(Context, 'update_position') as mock_update_position:
-            context = Context(stack=[2, 20, 3], value=value)
+            context = Context(stack=[2, 20, 3], value=value, output='toto')
 
             context = op(context)
 
@@ -142,7 +142,7 @@ def test_push(value):
             assert context.value == 1
             mock_rotate_dp.assert_not_called()
             mock_update_position.assert_called_with(steps=1)
-            assert context.output == ''
+            assert context.output == 'toto'
 
 
 def test_push_null_value():
@@ -165,7 +165,7 @@ def test_pointer(stack_value):
 
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         with mock.patch.object(Context, 'update_position') as mock_update_position:
-            context = Context(stack=[20, 3, stack_value])
+            context = Context(stack=[20, 3, stack_value], output='toto')
 
             context = op(context)
 
@@ -173,7 +173,7 @@ def test_pointer(stack_value):
             assert context.value == 1
             mock_rotate_dp.assert_called_with(steps=stack_value)
             mock_update_position.assert_called_with(steps=1)
-            assert context.output == ''
+            assert context.output == 'toto'
 
 
 @pytest.mark.parametrize('op', [
