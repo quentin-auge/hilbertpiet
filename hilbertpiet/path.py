@@ -183,15 +183,15 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
 
     # Integrate clockwise U-turns in path (`C` characters).
     # Make sure to replace the right number of path characters.
-    expexted_setup_cost = 3
-    assert UTurnClockwise().size == expexted_setup_cost + 3, 'Wrong UTurnClockwise cost'
-    path = path.replace('F' * expexted_setup_cost + '+F+', ' C ')
+    expected_setup_cost = 3
+    assert UTurnClockwise().size == expected_setup_cost + 3, 'Wrong UTurnClockwise cost'
+    path = path.replace('F' * expected_setup_cost + '+F+', ' C ')
 
     # Integrate anticlockwise U-turns in path (`A` characters).
     # Make sure to replace the right number of path characters.
-    expexted_setup_cost = 5
-    assert UTurnAntiClockwise().size == expexted_setup_cost + 3, 'Wrong UTurnAntiClockwise cost'
-    path = path.replace('F' * expexted_setup_cost + '-F-', ' A ')
+    expected_setup_cost = 5
+    assert UTurnAntiClockwise().size == expected_setup_cost + 3, 'Wrong UTurnAntiClockwise cost'
+    path = path.replace('F' * expected_setup_cost + '-F-', ' A ')
 
     path = path.strip()
 

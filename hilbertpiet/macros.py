@@ -20,8 +20,8 @@ class Macro(Op):
     @property
     def expanded_ops(self) -> List[Op]:
         """
-        Recursively get the primitive operations (of type :class:`hilbertpiet.ops.Op`) represented by the
-        macro.
+        Recursively get the primitive operations (of type :class:`hilbertpiet.ops.Op`)
+        represented by the macro.
         """
 
         expanded_ops = []
