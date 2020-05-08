@@ -226,7 +226,7 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
     return transformed_path
 
 
-class NotEnoughSpace(BaseException):
+class NotEnoughSpace(Exception):
     pass
 
 
