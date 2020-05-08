@@ -35,7 +35,7 @@ class Program(Macro):
         for op in self.ops:
             if isinstance(op, Macro):
                 # Log macro name and execute expanded ops
-                LOGGER.info(str(op))
+                LOGGER.debug(str(op))
                 for op in op.expanded_ops:
                     context = self.__step(op, context, indent_logging=True)
             else:
@@ -49,5 +49,5 @@ class Program(Macro):
         """
         context = op(context)
         indent = '  ' if indent_logging else ''
-        LOGGER.info(f'{indent}{op} {context}')
+        LOGGER.debug(f'{indent}{op} {context}')
         return context

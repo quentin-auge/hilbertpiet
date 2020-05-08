@@ -278,7 +278,8 @@ def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], in
         i_path += 1
 
     if i_ops < len(ops):
-        raise RuntimeError(f'Not enough space in path; ops {ops[i_ops:]} not mapped')
+        remaining = len(ops) - i_ops
+        raise RuntimeError(f'Not enough space in path; {remaining} remaining operations')
 
     mapped_program = Program(mapped_ops)
 

@@ -23,7 +23,7 @@ setup(name='hilbertpiet',
 
       entry_points={
           'console_scripts': [
-              'hilbertpiet = hilbertpiet.cli.run:main',
+              'hilbertpiet = hilbertpiet.cli.main:main',
               'optimize-piet-numbers = hilbertpiet.cli.optimize_numbers:main'
           ]
       })
