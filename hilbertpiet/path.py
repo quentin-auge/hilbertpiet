@@ -136,7 +136,7 @@ def _stretch_path(path: str) -> str:
     return stretched_path
 
 
-def generate_path(n_iterations: int) -> str:
+def generate_path(iterations: int) -> str:
     """
     Generate path as a string of turtle instructions to trace a Hilbert curve II after a given
     number of iterations.
@@ -150,10 +150,10 @@ def generate_path(n_iterations: int) -> str:
     rules = {'X': 'XFYFX+F+YFXFY-F-XFYFX', 'Y': 'YFXFY-F-XFYFX+F+YFXFY'}
     path = 'X'
 
-    if n_iterations <= 0:
+    if iterations <= 0:
         return path
 
-    for _ in range(n_iterations):
+    for _ in range(iterations):
         path = ''.join(rules.get(c, c) for c in path)
 
     path = path.replace('X', '').replace('Y', '')
@@ -260,14 +260,9 @@ def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], in
                 available_size -= ops[i_ops].size
                 i_ops += 1
 
-            # `NoOp(1)` is illegal
-            if available_size == 1:
-                # Remove last operation from slot
-                available_size += mapped_ops.pop().size
-                i_ops -= 1
-
-            # It is illegal to place a `Resize` operation before a no-op or U-turn
-            if mapped_ops and isinstance(mapped_ops[-1], Resize):
+            # It is illegal to place a `Resize` operation before a no-op or U-turn.
+            # `NoOp(1)` is illegal.
+            while mapped_ops and isinstance(mapped_ops[-1], Resize) or available_size == 1:
                 # Remove last operation from slot
                 available_size += mapped_ops.pop().size
                 i_ops -= 1
