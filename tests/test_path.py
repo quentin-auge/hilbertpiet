@@ -3,7 +3,8 @@ import pytest
 from hilbertpiet.context import Context
 from hilbertpiet.ops import Init, Push, Resize
 from hilbertpiet.path import NoOp, UTurnAntiClockwise, UTurnClockwise
-from hilbertpiet.path import map_ops_to_path, map_path_u_turns
+from hilbertpiet.path import map_path_u_turns, map_program_to_path
+from hilbertpiet.run import Program
 
 clockwise_params = [pytest.param(True, id='clockwise'), pytest.param(False, id='anticlockwise')]
 
@@ -111,7 +112,7 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init()],
+        [],
         [Init(),
          NoOp(5), UTurnClockwise(),
          NoOp(6), UTurnAntiClockwise(),
@@ -122,7 +123,7 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(2), Push()],
+        [Push(), Resize(2), Push()],
         # All ops fit in first slot with 2 codels left
         [Init(),
          Push(), Resize(2), Push(), NoOp(2), UTurnClockwise(),
@@ -134,11 +135,12 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(3), Push()],
+        [Push(), Resize(3), Push()],
         # All ops fit in first slot with 1 codel left -> illegal NoOp(1), carry last Push forward
         # First slot now ends with Resize -> illegal, carry Resize forward
         # Resize + Push fit in second slot with 3 codels left
-        [Init(), Push(), NoOp(4), UTurnClockwise(),
+        [Init(),
+         Push(), NoOp(4), UTurnClockwise(),
          Resize(3), Push(), NoOp(3), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
@@ -147,10 +149,10 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(),
-         Push(), Resize(4), Push()],
+        [Push(), Resize(4), Push()],
         # All ops fit in first slot with 0 codel left
-        [Init(), Push(), Resize(4), Push(), UTurnClockwise(),
+        [Init(),
+         Push(), Resize(4), Push(), UTurnClockwise(),
          NoOp(6), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
@@ -159,7 +161,7 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(5), Push()],
+        [Push(), Resize(5), Push()],
         # Push + Resize fit in first slot, but last op is Resize -> illegal, move Resize forward
         # Resize + Push fit in second slot, with 1 codel left -> illegal NoOp(1), carry last Push
         #   forward
@@ -175,10 +177,11 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(6), Push()],
+        [Push(), Resize(6), Push()],
         # Push fits in first slot with 4 codels left
         # Resize + Push fit in second slot with 0 codel left
-        [Init(), Push(), NoOp(4), UTurnClockwise(),
+        [Init(),
+         Push(), NoOp(4), UTurnClockwise(),
          Resize(6), Push(), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
@@ -187,11 +190,12 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(7), Push()],
+        [Push(), Resize(7), Push()],
         # Push fits in first slot with 4 codels left
         # Resize fits in second slot, but last op is Resize -> illegal, carry Resize forward
         # Resize + Push fit in second slot, with 0 codel left
-        [Init(), Push(), NoOp(4), UTurnClockwise(),
+        [Init(),
+         Push(), NoOp(4), UTurnClockwise(),
          NoOp(6), UTurnAntiClockwise(),
          Resize(7), Push(), UTurnClockwise(),
          NoOp(2)],
@@ -200,7 +204,7 @@ def test_map_path_u_turns(path, expected):
 
     pytest.param(
         ['I', 5, 'C', 6, 'A', 7, 'C', 2],
-        [Init(), Push(), Resize(8), Push()],
+        [Push(), Resize(8), Push()],
         # Push fits in first slot with 4 codels left
         # Resize does not fit in second slot
         # Resize fits in third slot, but last op is Resize -> illegal, move Resize forward
@@ -209,23 +213,19 @@ def test_map_path_u_turns(path, expected):
         id='resize_8'
     )
 ])
-def test_map_ops_to_path(path, ops, expected):
+def test_map_program_to_path(path, ops, expected):
+    program = Program(ops)
+
     if isinstance(expected, Exception):
         with pytest.raises(type(expected), match=str(expected)):
-            print(map_ops_to_path(ops, path))
+            print(map_program_to_path(program, path))
+
     else:
-        mapped_ops = map_ops_to_path(ops, path)
-        assert mapped_ops == expected
+        # Expect given output program ops
+        mapped_program = map_program_to_path(program, path)
+        assert mapped_program.ops == expected
 
-        # Transform a context with initial operations
-        context1 = Context()
-        for op in ops:
-            context1 = op(context1)
-
-        # Transform a context with mapped operations
-        context2 = Context()
-        for op in mapped_ops:
-            context2 = op(context2)
-
-        # Make sure the resulting stack is the same
+        # Make sure initial and mapped ops transform context stack in the same way
+        context1 = program.run()
+        context2 = mapped_program.run()
         assert context1.stack == context2.stack

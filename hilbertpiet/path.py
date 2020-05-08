@@ -4,7 +4,8 @@ from typing import List, Literal, Union
 
 from hilbertpiet.context import Context
 from hilbertpiet.macros import Macro
-from hilbertpiet.ops import Add, Duplicate, Init, Op, Pointer, Pop, Push, Resize
+from hilbertpiet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
+from hilbertpiet.run import Program
 
 
 @dataclass(eq=False)
@@ -225,9 +226,9 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
     return transformed_path
 
 
-def map_ops_to_path(ops: List[Op], path: List[Union[Literal['C', 'A'], int]]) -> List[Op]:
+def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], int]]) -> Program:
     """
-    Map a list of ops to empty slots in a path. Fill in the blanks with no-ops.
+    Map a program (list of ops/macros) to empty slots in a path. Fill in the blanks with no-ops.
 
     Mind the following rules:
         * `NoOp(1)` is illegal
@@ -236,13 +237,9 @@ def map_ops_to_path(ops: List[Op], path: List[Union[Literal['C', 'A'], int]]) ->
     Crash if path doesn't have enough space to accomodate the operations.
     """
 
-    assert len(path) > 0
-    assert path[0] == 'I'
+    ops = program.expanded_ops
 
-    assert len(ops) > 0
-    assert isinstance(ops[0], Init)
-
-    mapped_ops = [Init()]
+    mapped_ops = []
     i_path, i_ops = 1, 1
 
     while i_path < len(path):
@@ -270,7 +267,7 @@ def map_ops_to_path(ops: List[Op], path: List[Union[Literal['C', 'A'], int]]) ->
                 i_ops -= 1
 
             # It is illegal to place a `Resize` operation before a no-op or U-turn
-            if isinstance(mapped_ops[-1], Resize):
+            if mapped_ops and isinstance(mapped_ops[-1], Resize):
                 # Remove last operation from slot
                 available_size += mapped_ops.pop().size
                 i_ops -= 1
@@ -288,4 +285,6 @@ def map_ops_to_path(ops: List[Op], path: List[Union[Literal['C', 'A'], int]]) ->
     if i_ops < len(ops):
         raise RuntimeError(f'Not enough space in path; ops {ops[i_ops:]} not mapped')
 
-    return mapped_ops
+    mapped_program = Program(mapped_ops)
+
+    return mapped_program
