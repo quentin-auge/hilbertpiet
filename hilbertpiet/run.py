@@ -100,15 +100,15 @@ class Program(Macro):
 
         initial_color = Color.from_name(initial_color)
 
-        for (x, y), (hue_change, lightness_change) in self.codels.items():
+        for (x, y), (lightness_change, hue_change) in self.codels.items():
             # Codel bounding box
             corner1 = (x * codel_size, y * codel_size)
             corner2 = (corner1[0] + codel_size - 1, corner1[1] + codel_size - 1)
             codel_bounding_box = (corner1, corner2)
 
             # Codel color
-            codel_color = Color(initial_color.hue + hue_change,
-                                initial_color.lightness + lightness_change)
+            codel_color = Color(initial_color.lightness + lightness_change,
+                                initial_color.hue + hue_change)
             codel_color_code = codel_color.code
 
             # Draw codel
