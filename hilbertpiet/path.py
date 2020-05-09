@@ -143,7 +143,7 @@ def generate_path(iterations: int) -> str:
 
     Notes:
         Instructions are `F` (forward), `+` (turn right + forward), `-` (turn left + forward).
-        https://elc.github.io/posts/plotting-fractals-step-by-step-with-python/#hilbert-curve-ii.
+        https://elc.github.io/posts/plotting-fractals-step-by-step-with-python/#hilbert-curve-ii
     """
 
     # L-system rules for Hilbert curve II

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import operator
 import pickle
 from math import log, sqrt
 from pathlib import Path
 
 from hilbertpiet.numbers import PushNumber
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PushNumberOptimizer:
@@ -80,12 +83,20 @@ def main():
     parser.add_argument('--limit', type=int, nargs='?', default=128,
                         help='limit number to optimize (default: %(default)s)')
     parser.add_argument('filepath', type=Path, help='pickled numbers filepath')
+    parser.add_argument('--verbose', '-v', action='store_true', help='debug mode')
     args = parser.parse_args()
+
+    # Setup logging
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
+                        format='%(message)s')
+
+    # Optimize numbers
 
     if not args.show_only:
         opt = PushNumberOptimizer(max_num=args.limit)
 
-        print(f'Round 0: cost={opt._cost}')
+        LOGGER.info(f'Round 0: cost={opt._cost}')
 
         optimizations = [opt._optimize_pow,
                          opt._optimize_mult, opt._optimize_div,
@@ -93,17 +104,22 @@ def main():
 
         for i, optimize in enumerate(optimizations, 1):
             optimize()
-            print(f'Round {i}: cost={opt._cost}, {optimize.__name__}')
+            LOGGER.info(f'Round {i}: cost={opt._cost}, {optimize.__name__}')
 
-        print()
-        print(f'Saving numbers to {args.filepath}')
+        LOGGER.info('')
+        LOGGER.info(f'Saving numbers to {args.filepath}')
         opt.save(args.filepath)
-        print()
+        LOGGER.info('')
+
+    # Print numbers
 
     PushNumber.load_numbers(args.filepath)
     for n in range(1, args.limit + 1):
         num = PushNumber(n)
-        print(f'{n} = {num.decomposition:38} cost={num._cost}')
+        LOGGER.info(f'{n} = {num.decomposition}')
+        LOGGER.debug(f'{repr(num)}.ops = {num.expanded_ops}')
+        LOGGER.debug(f'cost = {num._cost}')
+        LOGGER.debug('')
 
 
 if __name__ == '__main__':

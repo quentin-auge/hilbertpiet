@@ -4,7 +4,6 @@ import logging
 import string
 import sys
 from pathlib import Path
-from pprint import pprint
 
 from hilbertpiet.numbers import PushNumber
 from hilbertpiet.ops import OutChar
@@ -22,14 +21,14 @@ def main():
                               dest='input', help='input string file (default stdin)')
     input_parser.add_argument('--input', '-i', type=io.StringIO,
                               dest='input', help='input string (default stdin)')
-    parser.add_argument('--verbose', '-v', action='store_true', help='debug_mode')
+    parser.add_argument('--verbose', '-v', action='store_true', help='debug mode')
     parser.set_defaults(input=sys.stdin)
     args = parser.parse_args()
 
     # Setup logging
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
-                        format='%(levelname)s:%(name)s: %(message)s')
+                        format='%(message)s')
 
     # Read input
 
@@ -52,6 +51,7 @@ def main():
     program = Program(ops)
 
     LOGGER.info(f'{program.size} codels before mapping')
+    LOGGER.debug(f'Piet operations = {program.ops}')
     LOGGER.info('')
 
     # Create path and map program
