@@ -253,4 +253,4 @@ class OutChar(Op):
 
     @property
     def color_change(self) -> complex:
-        return 0 + 5j
+        return 2 + 5j
