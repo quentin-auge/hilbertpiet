@@ -17,6 +17,8 @@ setup(name='hilbertpiet',
       classifiers=['Programming Language :: Python :: 3 :: Only',
                    'Operating System :: Unix'],
 
+      install_requires=['pillow'],
+
       extras_require={
           'testing': ['coverage', 'mock', 'pytest', 'pytest-cov']
       },

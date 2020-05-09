@@ -22,6 +22,11 @@ def main():
     input_parser.add_argument('--input', '-i', type=io.StringIO,
                               dest='input', help='input string (default stdin)')
     parser.add_argument('--verbose', '-v', action='store_true', help='debug mode')
+    parser.add_argument('--codel-size', '-n', type=int, default=20,
+                        help='output codel size (default: %(default)s)')
+    parser.add_argument('--initial-color', '-c', type=str, default='red',
+                        help='initial color (default: %(default)s)')
+    parser.add_argument('--out', '-o', type=Path, required=True, help='output image file')
     parser.set_defaults(input=sys.stdin)
     args = parser.parse_args()
 
@@ -81,7 +86,7 @@ def main():
 
     context = program.run()
 
-    # Print program output
+    # Log program output
 
     printable_output = context.output.strip()
     if '\n' in printable_output:
@@ -91,6 +96,13 @@ def main():
 
     LOGGER.info(f'Ouput: {printable_output}')
     LOGGER.info('')
+
+    # Draw codels
+
+    img = program.render(initial_color=args.initial_color, codel_size=args.codel_size)
+
+    LOGGER.info(f'Saving program to {args.out}')
+    img.save(args.out)
 
 
 if __name__ == '__main__':
