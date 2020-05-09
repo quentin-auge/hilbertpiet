@@ -33,7 +33,7 @@ def main():
     # Read input
 
     input = ''.join(args.input.readlines())
-    LOGGER.info(f'Input size = {len(input)}')
+    LOGGER.info(f'Input length = {len(input)}')
 
     num_chars = [ord(c) for c in input if c in set(string.printable)]
     LOGGER.info(f'Skipping {len(input) - len(num_chars)} non-ascii characters')

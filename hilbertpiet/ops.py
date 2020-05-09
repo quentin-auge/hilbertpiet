@@ -15,8 +15,8 @@ class Op:
 
         context = self._call(context)
 
-        # Assume using Resize operation is the only way to set codel size
-        if not isinstance(self, Resize):
+        # Assume using Extend operation is the only way to change codel size
+        if not isinstance(self, Extend):
             # Hence, all other operations are codels of size 1
             context.value = 1
 
@@ -62,32 +62,17 @@ class Init(Op):
 
 
 @dataclass
-class Resize(Op):
+class Extend(Op):
     """
-    Sets the size of the previous codel and memorizes it as context value for the next operation.
+    Increment the size of the previous codel and memorizes it as context value for the next
+    operation.
 
     Notes:
         Not a real codel. Runtime knows how to handle it.
-        Checks context value is positive. Null/negative codel sizes make no sense.
     """
 
-    value: int
-
-    def __init__(self, value: int):
-        if value <= 1:
-            raise ValueError(f'Invalid non-positive resize value {value}')
-        self.value = value
-
-    @property
-    def size(self):
-        return self.value - 1
-
     def _call(self, context: Context) -> Context:
-        if context.value != 1:
-            raise RuntimeError(f"Can't set resize value {self.value} "
-                               f"over non-unitary resize value {context.value}")
-
-        context.value = self.value
+        context.value += 1
         return context
 
 

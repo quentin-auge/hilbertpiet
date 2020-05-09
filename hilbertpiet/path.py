@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import List, Literal, Union
 
 from hilbertpiet.context import Context
-from hilbertpiet.macros import Macro
-from hilbertpiet.ops import Add, Duplicate, Op, Pointer, Pop, Push, Resize
+from hilbertpiet.macros import Macro, Resize
+from hilbertpiet.ops import Add, Duplicate, Extend, Op, Pointer, Pop, Push
 from hilbertpiet.run import Program
 
 
@@ -22,7 +22,7 @@ class UTurn(Macro):
         * Second dp rotation: 1 codel
 
     Notes:
-        It is assumed the last codel before U-turn is anything but a `Resize` operation.
+        It is assumed the last codel before U-turn is anything but a `Resize`/`Extend` operation.
     """
 
     @property
@@ -82,7 +82,7 @@ class NoOp(Macro):
     A given number of codels that ultimately don't touch either the stack or dp.
 
     Notes:
-        It is assumed the last codel before U-turn is anything but a `Resize` operation.
+        It is assumed the last codel before U-turn is anything but a `Resize`/`Extend` operation.
     """
 
     length: int
@@ -104,7 +104,7 @@ class NoOp(Macro):
         ops = [Push()]
 
         if self.length % 2 == 1:
-            ops.append(Resize(2))
+            ops.append(Extend())
 
         ops += [Duplicate(), Add()] * (self.length // 2 - 1)
 
@@ -196,14 +196,14 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
 
     path = path.strip()
 
-    please_resize_path_msg = 'put in more iterations or stretch it'
-    please_resize_path_msg += f'\n  Original path: {original_path}'
-    please_resize_path_msg += f'\n  Transformed path: {path}'
+    resize_path_msg = 'put in more iterations or stretch it'
+    resize_path_msg += f'\n  Original path: {original_path}'
+    resize_path_msg += f'\n  Transformed path: {path}'
 
     if '-' in path or '+' in path:
         # Unprocessed turns in resulting path means insufficient forwards quantity before
         # a U-turn to set it up.
-        raise RuntimeError(f'Failed to replace all U-turns in path; {please_resize_path_msg}')
+        raise RuntimeError(f'Failed to replace all U-turns in path; {resize_path_msg}')
 
     # Remove empty spaces from path
     path = path.replace('  ', ' ')
@@ -217,8 +217,7 @@ def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
 
             if forwards_num == 1:
                 # No-ops (whose minimum length is 2) can't be mapped to single forwards.
-                raise RuntimeError(
-                    f'Generated single forwards in path; {please_resize_path_msg}')
+                raise RuntimeError(f'Generated single forwards in path; {resize_path_msg}')
 
             # Replace consecutive forwards with how many of them they are
             transformed_path[i] = forwards_num
@@ -236,7 +235,7 @@ def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], in
 
     Mind the following rules:
         * `NoOp(1)` is illegal
-        * It is illegal to place a `Resize` operation before a no-op or U-turn
+        * It is illegal to place a `Resize`/`Extend` operation before a no-op or U-turn
 
     Crash if path doesn't have enough space to accomodate the operations.
     """
@@ -264,9 +263,9 @@ def map_program_to_path(program: Program, path: List[Union[Literal['C', 'A'], in
                 available_size -= ops[i_ops].size
                 i_ops += 1
 
-            # It is illegal to place a `Resize` operation before a no-op or U-turn.
+            # It is illegal to place a `Extend` operation before a no-op or U-turn.
             # `NoOp(1)` is illegal.
-            while mapped_ops and isinstance(mapped_ops[-1], Resize) or available_size == 1:
+            while mapped_ops and isinstance(mapped_ops[-1], Extend) or available_size == 1:
                 # Remove last operation from slot
                 available_size += mapped_ops.pop().size
                 i_ops -= 1

@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from typing import List
 
 import mock
+import pytest
 
 from hilbertpiet.context import Context
-from hilbertpiet.macros import Macro
-from hilbertpiet.ops import Op
+from hilbertpiet.macros import Macro, Resize
+from hilbertpiet.ops import Extend, Op
 
 
 class DummyOp(Op):
@@ -68,3 +69,28 @@ def test_expanded_ops():
 
 def test_size():
     assert CABCB().size == 5
+
+
+@pytest.mark.parametrize('value', [2, 3, 4, 10])
+def test_resize(value):
+    op = Resize(value)
+
+    with mock.patch.object(Extend, '__call__') as mock_call_Extend:
+        op(Context(value=1))
+        assert mock_call_Extend.call_count == value - 1
+
+
+@pytest.mark.parametrize('size', [-4, 0, 1])
+def test_resize_invalid_size(size):
+    with pytest.raises(ValueError, match='Invalid non-positive resize value'):
+        print(Resize(size))
+
+
+@pytest.mark.parametrize('initial_value', [0, 4])
+def test_resize_over_non_unitary_value(initial_value):
+    op = Resize(3)
+    context = Context(value=initial_value)
+    expected_msg = f"Can't set resize value 3 " \
+                   f"over non-unitary resize value {context.value}"
+    with pytest.raises(RuntimeError, match=expected_msg):
+        print(op(context))

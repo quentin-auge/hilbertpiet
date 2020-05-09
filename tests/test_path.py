@@ -1,7 +1,8 @@
 import pytest
 
 from hilbertpiet.context import Context
-from hilbertpiet.ops import Init, Push, Resize
+from hilbertpiet.macros import Resize
+from hilbertpiet.ops import Extend, Init, Push
 from hilbertpiet.path import NoOp, NotEnoughSpace, UTurnAntiClockwise, UTurnClockwise
 from hilbertpiet.path import map_path_u_turns, map_program_to_path
 from hilbertpiet.run import Program
@@ -126,7 +127,7 @@ def test_map_path_u_turns(path, expected):
         [Push(), Resize(2), Push()],
         # All ops fit in first slot with 2 codels left
         [Init(),
-         Push(), Resize(2), Push(), NoOp(2), UTurnClockwise(),
+         Push()] + [Extend()] * 1 + [Push(), NoOp(2), UTurnClockwise(),
          NoOp(6), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
@@ -140,8 +141,8 @@ def test_map_path_u_turns(path, expected):
         # First slot now ends with Resize -> illegal, carry Resize forward
         # Resize + Push fit in second slot with 3 codels left
         [Init(),
-         Push(), NoOp(4), UTurnClockwise(),
-         Resize(3), Push(), NoOp(3), UTurnAntiClockwise(),
+         Push(), NoOp(4), UTurnClockwise()] +
+         [Extend()] * 2 + [Push(), NoOp(3), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
         id='resize_3'
@@ -152,7 +153,7 @@ def test_map_path_u_turns(path, expected):
         [Push(), Resize(4), Push()],
         # All ops fit in first slot with 0 codel left
         [Init(),
-         Push(), Resize(4), Push(), UTurnClockwise(),
+         Push()] + [Extend()] * 3 + [Push(), UTurnClockwise(),
          NoOp(6), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
@@ -169,8 +170,8 @@ def test_map_path_u_turns(path, expected):
         # Resize + Push fit in third slot, with 2 codels left
         [Init(),
          Push(), NoOp(4), UTurnClockwise(),
-         NoOp(6), UTurnAntiClockwise(),
-         Resize(5), Push(), NoOp(2), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise()] +
+         [Extend()] * 4 + [Push(), NoOp(2), UTurnClockwise(),
          NoOp(2)],
         id='resize_5'
     ),
@@ -181,8 +182,8 @@ def test_map_path_u_turns(path, expected):
         # Push fits in first slot with 4 codels left
         # Resize + Push fit in second slot with 0 codel left
         [Init(),
-         Push(), NoOp(4), UTurnClockwise(),
-         Resize(6), Push(), UTurnAntiClockwise(),
+         Push(), NoOp(4), UTurnClockwise()] +
+         [Extend()] * 5 + [Push(), UTurnAntiClockwise(),
          NoOp(7), UTurnClockwise(),
          NoOp(2)],
         id='resize_6'
@@ -196,8 +197,8 @@ def test_map_path_u_turns(path, expected):
         # Resize + Push fit in second slot, with 0 codel left
         [Init(),
          Push(), NoOp(4), UTurnClockwise(),
-         NoOp(6), UTurnAntiClockwise(),
-         Resize(7), Push(), UTurnClockwise(),
+         NoOp(6), UTurnAntiClockwise()] +
+        [Extend()] * 6 + [Push(), UTurnClockwise(),
          NoOp(2)],
         id='resize_7'
     ),

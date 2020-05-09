@@ -5,7 +5,7 @@ import pytest
 
 from hilbertpiet.context import Context
 from hilbertpiet.ops import Add, Divide, Duplicate, Init, Multiply, Op
-from hilbertpiet.ops import OutChar, OutNumber, Pointer, Pop, Push, Resize, Substract
+from hilbertpiet.ops import Extend, OutChar, OutNumber, Pointer, Pop, Push, Substract
 
 
 def test_str():
@@ -24,10 +24,8 @@ def test_str():
 
 
 @pytest.mark.parametrize('op,expected_size', [
-    (Init(), 1),
-    (Resize(2), 1), (Resize(3), 2), (Resize(4), 3), (Resize(10), 9),
-    (Push(), 1), (Pop(), 1), (Duplicate(), 1), (Add(), 1), (Substract(), 1),
-    (Multiply(), 1), (Divide(), 1), (Pointer(), 1)
+    (Init(), 1), (Extend(), 1), (Push(), 1), (Pop(), 1), (Duplicate(), 1),
+    (Add(), 1), (Substract(), 1), (Multiply(), 1), (Divide(), 1), (Pointer(), 1)
 ])
 def test_size(op, expected_size):
     assert op.size == expected_size
@@ -95,37 +93,21 @@ def test_init_nonempty_context(context):
         print(op(context))
 
 
-@pytest.mark.parametrize('value', [2, 3, 4, 10])
-def test_resize(value):
-    op = Resize(value)
+@pytest.mark.parametrize('value', [4, 5, 6])
+def test_extend(value):
+    op = Extend()
 
     with mock.patch.object(Context, 'rotate_dp') as mock_rotate_dp:
         with mock.patch.object(Context, 'update_position') as mock_update_position:
-            context = Context(stack=[2, 20, 3], value=1, output='toto')
+            context = Context(stack=[2, 20, 3], value=value, output='toto')
 
             context = op(context)
 
             assert context.stack == [2, 20, 3]
-            assert context.value == value
+            assert context.value == value + 1
             mock_rotate_dp.assert_not_called()
-            mock_update_position.assert_called_with(steps=value - 1)
+            mock_update_position.assert_called_with(steps=1)
             assert context.output == 'toto'
-
-
-@pytest.mark.parametrize('size', [-4, 0, 1])
-def test_resize_invalid_size(size):
-    with pytest.raises(ValueError, match='Invalid non-positive resize value'):
-        print(Resize(size))
-
-
-@pytest.mark.parametrize('initial_value', [0, 4])
-def test_resize_over_non_unitary_value(initial_value):
-    op = Resize(3)
-    context = Context(value=initial_value)
-    expected_msg = f"Can't set resize value 3 " \
-                   f"over non-unitary resize value {context.value}"
-    with pytest.raises(RuntimeError, match=expected_msg):
-        print(op(context))
 
 
 @pytest.mark.parametrize('value', [4, 5, 6])

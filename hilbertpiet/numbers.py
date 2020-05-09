@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from hilbertpiet.macros import Macro
-from hilbertpiet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Resize, Substract
+from hilbertpiet.macros import Macro, Resize
+from hilbertpiet.ops import Add, Divide, Duplicate, Multiply, Op, Push, Substract
 
 
 @dataclass

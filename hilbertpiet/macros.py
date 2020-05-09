@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List
 
 from hilbertpiet.context import Context
-from hilbertpiet.ops import Op
+from hilbertpiet.ops import Extend, Op
 
 
 @dataclass(eq=False)
@@ -40,3 +40,30 @@ class Macro(Op):
     @abc.abstractmethod
     def ops(self) -> List[Op]:
         raise NotImplementedError
+
+
+@dataclass
+class Resize(Macro):
+    """
+    Sets the size of the previous codel and memorizes it as context value for the next operation.
+
+    Notes:
+        Checks context value is positive. Null/negative codel sizes make no sense.
+    """
+
+    value: int
+
+    def __init__(self, value: int):
+        if value <= 1:
+            raise ValueError(f'Invalid non-positive resize value {value}')
+        self.value = value
+
+    @property
+    def ops(self) -> List[Op]:
+        return [Extend() for _ in range(self.value - 1)]
+
+    def __call__(self, context: Context) -> Context:
+        if context.value != 1:
+            raise RuntimeError(f"Can't set resize value {self.value} "
+                               f"over non-unitary resize value {context.value}")
+        return super().__call__(context)

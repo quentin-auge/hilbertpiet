@@ -54,7 +54,7 @@ def test_push_number():
     numbers_filepath = MODULE_ROOT / 'data' / 'numbers.pkl'
 
     PushNumber.load_numbers(numbers_filepath)
-    for n in range(1, 10000):
+    for n in range(1, 1000):
         number = PushNumber(n)
         assert number(Context(value=1)).stack == [n]
         assert number._cost == number._tree._cost
