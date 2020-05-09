@@ -2,20 +2,20 @@ import pytest
 
 from hilbertpiet.color import Color
 
-hue_lightness_params = [(hue, lightness) for hue in range(7) for lightness in range(4)]
+lightness_hue_params = [(lightness, hue) for lightness in range(4) for hue in range(7)]
 
 
-@pytest.mark.parametrize('hue, lightness', hue_lightness_params)
-def test_init(hue, lightness):
-    color = Color(hue, lightness)
+@pytest.mark.parametrize('lightness, hue', lightness_hue_params)
+def test_init(lightness, hue):
+    color = Color(lightness, hue)
     for hue_shift in (0, 6, -6, 12, -12):
         for lightness_shift in (0, 3, -3, 6, -6):
-            assert Color(hue + hue_shift, lightness + lightness_shift) == color
+            assert Color(lightness + lightness_shift, hue + hue_shift) == color
 
 
-@pytest.mark.parametrize('hue, lightness', hue_lightness_params)
-def test_to_from_name(hue, lightness):
-    color = Color(hue, lightness)
+@pytest.mark.parametrize('lightness, hue', lightness_hue_params)
+def test_to_from_name(lightness, hue):
+    color = Color(lightness, hue)
     actual_color = Color.from_name(str(color))
     assert color == actual_color
 

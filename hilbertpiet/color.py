@@ -9,15 +9,15 @@ class Color:
     A codel color as defined in Piet (i.e. a valid hue, and a valid level of lightness).
     """
 
-    hue: int
     lightness: int
+    hue: int
 
     hue_names = ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta']
     hue_codes = ['#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#0000FF', '#FF00FF']
 
-    def __init__(self, hue: int, lightness: int):
-        self.hue = hue % 6
+    def __init__(self, lightness: int, hue: int):
         self.lightness = lightness % 3
+        self.hue = hue % 6
 
     @classmethod
     def from_name(cls, name: str) -> Color:
@@ -37,7 +37,7 @@ class Color:
         except ValueError:
             raise ValueError(f'Invalid color name: "{name}"')
 
-        return Color(hue, lightness)
+        return Color(lightness, hue)
 
     @property
     def code(self) -> str:
