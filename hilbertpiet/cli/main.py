@@ -4,6 +4,7 @@ import logging
 import string
 import sys
 from pathlib import Path
+from pprint import pprint
 
 from hilbertpiet.numbers import PushNumber
 from hilbertpiet.ops import OutChar
@@ -51,8 +52,6 @@ def main():
     program = Program(ops)
 
     LOGGER.info(f'{program.size} codels before mapping')
-    LOGGER.debug(f'Piet operations = {program.ops}')
-    LOGGER.debug(f'Expanded Piet operations = {program.expanded_ops}')
     LOGGER.info('')
 
     # Create path and map program
@@ -76,8 +75,6 @@ def main():
 
     LOGGER.info(f'{iterations} Hilbert curve iterations')
     LOGGER.info(f'{program.size} codels after mapping')
-    LOGGER.debug(f'Piet operations = {program.ops}')
-    LOGGER.debug(f'Expanded Piet operations = {program.expanded_ops}')
     LOGGER.info('')
 
     # Run program

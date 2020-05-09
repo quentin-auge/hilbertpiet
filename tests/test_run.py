@@ -9,15 +9,24 @@ from hilbertpiet.run import Program
 
 
 @dataclass
-class A(Op): pass
+class A(Op):
+    @property
+    def color_change(self) -> complex:
+        return 1 + 2j
 
 
 @dataclass
-class B(Op): pass
+class B(Op):
+    @property
+    def color_change(self) -> complex:
+        return 3 + 4j
 
 
 @dataclass
-class C(Op): pass
+class C(Op):
+    @property
+    def color_change(self) -> complex:
+        return 5 + 6j
 
 
 class BC(Macro):
@@ -27,7 +36,10 @@ class BC(Macro):
 
 
 @dataclass
-class D(Op): pass
+class D(Op):
+    @property
+    def color_change(self) -> complex:
+        return 7 + 8j
 
 
 def test_program_ops():
@@ -38,10 +50,10 @@ def test_program_ops():
 
 def test_program_run():
     context1 = Context(value=1, position=1)
-    context2 = Context(position=2 + 2j)
-    context3 = Context(position=3 + 3j)
-    context4 = Context(position=4 + 4j)
-    context5 = Context(stack=[5], value=5, position=5 + 5j, dp=1, output='five')
+    context2 = Context(position=1 + 2j)
+    context3 = Context(position=3 + 4j)
+    context4 = Context(position=5 + 6j)
+    context5 = Context(stack=[5], value=5, position=7 + 8j, dp=-1j, output='five')
 
     with mock.patch.object(A, '__call__', return_value=context2) as mock_call_A:
         with mock.patch.object(B, '__call__', return_value=context3) as mock_call_B:
@@ -57,3 +69,16 @@ def test_program_run():
                     mock_call_D.assert_called_once_with(context4)
 
                     assert final_context == context5
+
+                    assert program.codels == {
+                        # Init()
+                        (0, 0): (0, 0),
+                        # A()
+                        (1, 0): (1, 2),
+                        # B()
+                        (1, 2): (1 + 3, 2 + 4),
+                        # C()
+                        (3, 4): (1 + 3 + 5, 2 + 4 + 6),
+                        # D()
+                        (5, 6): (1 + 3 + 5 + 7, 2 + 4 + 6 + 8)
+                    }

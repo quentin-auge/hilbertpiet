@@ -26,6 +26,17 @@ class Op:
 
     @abc.abstractmethod
     def _call(self, context: Context) -> Context:
+        """
+        Context transformation associated with the operation.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def color_change(self) -> complex:
+        """
+        Lightness (real part) and hue (imag part) change associated with the operation.
+        """
         raise NotImplementedError
 
     @property
@@ -60,6 +71,10 @@ class Init(Op):
             raise RuntimeError(f'Invalid non-empty context: "{context}"')
         return context
 
+    @property
+    def color_change(self) -> complex:
+        return 0 + 0j
+
 
 @dataclass
 class Extend(Op):
@@ -75,6 +90,10 @@ class Extend(Op):
         context.value += 1
         return context
 
+    @property
+    def color_change(self) -> complex:
+        return 0 + 0j
+
 
 @dataclass
 class Push(Op):
@@ -89,6 +108,10 @@ class Push(Op):
         context.stack.append(context.value)
         return context
 
+    @property
+    def color_change(self) -> complex:
+        return 1 + 0j
+
 
 @dataclass
 class Pop(Op):
@@ -99,6 +122,10 @@ class Pop(Op):
     def _call(self, context: Context) -> Context:
         context.stack.pop()
         return context
+
+    @property
+    def color_change(self) -> complex:
+        return 2 + 0j
 
 
 @dataclass
@@ -111,6 +138,10 @@ class Duplicate(Op):
         x = context.stack.pop()
         context.stack.extend([x, x])
         return context
+
+    @property
+    def color_change(self) -> complex:
+        return 0 + 4j
 
 
 @dataclass(eq=False)
@@ -136,6 +167,10 @@ class Add(BinaryOp):
     """
     binary_op = operator.add
 
+    @property
+    def color_change(self) -> complex:
+        return 0 + 1j
+
 
 @dataclass
 class Substract(BinaryOp):
@@ -145,6 +180,10 @@ class Substract(BinaryOp):
     """
     binary_op = operator.sub
 
+    @property
+    def color_change(self) -> complex:
+        return 1 + 1j
+
 
 @dataclass
 class Multiply(BinaryOp):
@@ -152,6 +191,10 @@ class Multiply(BinaryOp):
     Pop the top two values off the stack, multiply them, and push the result back on the stack.
     """
     binary_op = operator.mul
+
+    @property
+    def color_change(self) -> complex:
+        return 2 + 1j
 
 
 @dataclass
@@ -161,6 +204,10 @@ class Divide(BinaryOp):
     by the top value, and push the result back on the stack.
     """
     binary_op = operator.floordiv
+
+    @property
+    def color_change(self) -> complex:
+        return 0 + 2j
 
 
 @dataclass
@@ -174,6 +221,10 @@ class Pointer(Op):
         context.rotate_dp(steps=context.stack.pop())
         return context
 
+    @property
+    def color_change(self) -> complex:
+        return 1 + 3j
+
 
 @dataclass
 class OutNumber(Op):
@@ -185,6 +236,10 @@ class OutNumber(Op):
         context.output += f'{context.stack.pop()} '
         return context
 
+    @property
+    def color_change(self) -> complex:
+        return 1 + 5j
+
 
 @dataclass
 class OutChar(Op):
@@ -195,3 +250,7 @@ class OutChar(Op):
     def _call(self, context: Context) -> Context:
         context.output += chr(context.stack.pop())
         return context
+
+    @property
+    def color_change(self) -> complex:
+        return 0 + 5j

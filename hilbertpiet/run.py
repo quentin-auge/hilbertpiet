@@ -1,12 +1,18 @@
 import logging
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List, Tuple
 
 from hilbertpiet.context import Context
 from hilbertpiet.macros import Macro
 from hilbertpiet.ops import Init, Op
 
 LOGGER = logging.getLogger(__name__)
+
+# (x, y) position
+Position = Tuple[int, int]
+
+# (lightness_change, hue_change) color change
+Colorchange = Tuple[int, int]
 
 
 @dataclass(eq=False)
@@ -19,7 +25,8 @@ class Program(Macro):
 
     def __init__(self, _ops: List[Op], /):
         self._ops = _ops
-        self._context = Context()
+        # Cummuative codels color change (in lightness and hue) from first codel of the program
+        self.codels: Dict[Position, Colorchange] = {}
 
     @property
     def ops(self):
@@ -31,23 +38,36 @@ class Program(Macro):
         """
 
         context = Context()
+        self.codels = {}
+        previous_color_change = 0 + 0j
 
         for op in self.ops:
+
+            # Handle macro expansion
+            ops = [op]
+            indent = 0
             if isinstance(op, Macro):
-                # Log macro name and execute expanded ops
                 LOGGER.debug(str(op))
-                for op in op.expanded_ops:
-                    context = self.__step(op, context, indent_logging=True)
-            else:
-                context = self.__step(op, context, indent_logging=False)
+                indent = 2
+                ops = op.expanded_ops
 
-        return context
+            for op in ops:
+                # Update codels
 
-    def __step(self, op, context, indent_logging=False):
-        """
-        Execute program operation and log result.
-        """
-        context = op(context)
-        indent = '  ' if indent_logging else ''
-        LOGGER.debug(f'{indent}{op} {context}')
+                x, y = (int(context.position.real),
+                        int(context.position.imag))
+
+                cum_color_change = previous_color_change + op.color_change
+                lightness_change, hue_change = (int(cum_color_change.real),
+                                              int(cum_color_change.imag))
+                previous_color_change = cum_color_change
+
+                self.codels[(x, y)] = (lightness_change, hue_change)
+
+                # Execute operation
+                context = op(context)
+
+                # Log operation execution
+                LOGGER.debug(f"{' ' * indent}{op} {context}")
+
         return context
