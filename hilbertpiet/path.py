@@ -158,7 +158,12 @@ def generate_path(iterations: int) -> str:
 
     path = path.replace('X', '').replace('Y', '')
 
-    return _stretch_path(path)
+    path = _stretch_path(path)
+
+    # Path is incomplete, for some reason
+    path = 'F' + path + 'F'
+
+    return path
 
 
 def map_path_u_turns(path: str) -> List[Union[Literal['C', 'A'], int]]:
