@@ -62,7 +62,7 @@ def main():
     # Create path and map program
 
     # Fine-tune necessary number of Hilbert curve iterations within a certain range
-    max_iterations = 5
+    max_iterations = 4
     iterations = 1
     success = False
     while not success:
