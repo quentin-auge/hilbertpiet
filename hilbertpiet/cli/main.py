@@ -5,6 +5,7 @@ import string
 import sys
 from pathlib import Path
 
+from hilbertpiet.color import Color
 from hilbertpiet.numbers import PushNumber
 from hilbertpiet.ops import OutChar
 from hilbertpiet.path import NotEnoughSpace, generate_path, map_path_u_turns, map_program_to_path
@@ -99,10 +100,20 @@ def main():
 
     # Draw codels
 
-    img = program.render(initial_color=args.initial_color, codel_size=args.codel_size)
-
     LOGGER.info(f'Saving program to {args.out}')
-    img.save(args.out)
+
+    if args.out.suffix == '.gif':
+        imgs = []
+        for hue in range(6):
+            initial_color = str(Color(lightness=1, hue=hue))
+            img = program.render(initial_color=initial_color, codel_size=args.codel_size)
+            imgs.append(img)
+        imgs[0].save(args.out, append_images=imgs[1:], duration=600, loop=0,
+                     save_all=True, optimize=False)
+
+    else:
+        img = program.render(initial_color=args.initial_color, codel_size=args.codel_size)
+        img.save(args.out)
 
 
 if __name__ == '__main__':

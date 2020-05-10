@@ -156,6 +156,12 @@ always positioned in a way that the next codel remains on the curve.
 7. Since (in our case) the color of each codel is determined by the first codel of the program,
 we're getting for free as many program as valid colors in Piet (18 of them).
 
+```
+$ hilbertpiet -i 'Hello World!' -o images/hello_world.gif
+```
+
+![Animated Hello World!](images/hello_world.gif)
+
 ## How is it run?
 
 Requires Python >= 3.7.
