@@ -1,5 +1,4 @@
 import logging
-import operator
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
@@ -85,33 +84,70 @@ class Program(Macro):
         if not self.codels:
             raise RuntimeError("Can't render program; run it first")
 
-        # Canvas size
+        # Image size
 
-        img_size_x = max(map(operator.itemgetter(0), self.codels.keys()))
-        img_size_y = max(map(operator.itemgetter(1), self.codels.keys()))
-        img_size = ((img_size_x + 1) * codel_size, (img_size_y + 1) * codel_size)
+        last_x, last_y = max(self.codels.keys())
+        # Because codels indices start at 0
+        img_size = (last_x + 1, last_y + 1)
+        # For additional termination codels
+        img_size = (img_size[0] + 1, img_size[1] + 1)
+        # Take codel size into account
+        img_size = (img_size[0] * codel_size, img_size[1] * codel_size)
 
         # Create image
 
         img = Image.new('RGB', img_size, color='white')
-        draw = ImageDraw.Draw(img)
 
-        # Draw codels
+        # Render codels
 
         initial_color = Color.from_name(initial_color)
 
         for (x, y), (lightness_change, hue_change) in self.codels.items():
-            # Codel bounding box
-            corner1 = (x * codel_size, y * codel_size)
-            corner2 = (corner1[0] + codel_size - 1, corner1[1] + codel_size - 1)
-            codel_bounding_box = (corner1, corner2)
+            color = Color(initial_color.lightness + lightness_change,
+                          initial_color.hue + hue_change)
 
-            # Codel color
-            codel_color = Color(initial_color.lightness + lightness_change,
-                                initial_color.hue + hue_change)
-            codel_color_code = codel_color.code
+            self.__render_codel(img, x, y, codel_size, color.code)
 
-            # Draw codel
-            draw.rectangle(codel_bounding_box, codel_color_code)
+        # Render termination codels
+
+        self.__render_termination_codels(img, last_x, last_y, codel_size, initial_color)
 
         return img
+
+    def __render_termination_codels(self, img: Image, last_x: int, last_y: int, codel_size: int,
+                                    initial_color: Color):
+        """
+        Render termination codels.
+        """
+
+        # Perform a last push
+
+        last_lightness_change, last_hue_change = self.codels[(last_x, last_y)]
+        termination_color = Color(initial_color.lightness + last_lightness_change + 1,
+                                  initial_color.hue + last_hue_change)
+        self.__render_codel(img, last_x + 1, last_y, codel_size, termination_color.code)
+        self.__render_codel(img, last_x + 1, last_y - 1, codel_size, termination_color.code)
+        self.__render_codel(img, last_x + 1, last_y + 1, codel_size, termination_color.code)
+
+        # Add required black codels
+
+        black_color_code = '#000000'
+        self.__render_codel(img, last_x, last_y - 1, codel_size, black_color_code)
+        self.__render_codel(img, last_x, last_y + 1, codel_size, black_color_code)
+        self.__render_codel(img, last_x + 1, last_y - 2, codel_size, black_color_code)
+
+    @staticmethod
+    def __render_codel(img: Image, x: int, y: int, codel_size: int, color_code: str):
+        """
+        Render a given codel.
+        """
+
+        draw = ImageDraw.Draw(img)
+
+        # Codel bounding box
+        corner1 = (x * codel_size, y * codel_size)
+        corner2 = (corner1[0] + codel_size - 1, corner1[1] + codel_size - 1)
+        codel_bounding_box = (corner1, corner2)
+
+        # Draw codel
+        draw.rectangle(codel_bounding_box, color_code)
