@@ -4,12 +4,60 @@ Generate
 [Piet](https://www.dangermouse.net/esoteric/piet.html) programs that print a given string to
 stdout. Make them represent [Hilbert curves](https://en.wikipedia.org/wiki/Hilbert_curve).
 
+Execute the resulting Piet program with [npiet](https://www.bertnase.de/npiet/).
+
 ## What does it look like?
 
-### Hello world
+### Hello World!
 
 ```
-$ hilbertpiet -i 'Hello World!'
+$ hilbertpiet -i 'Hello World!' -o images/hello_world.png
+```
+
+![Hello World!](images/hello_world.png)
+
+### Pi
+
+```
+$ hilbertpiet -i '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679' -o images/pi.png
+```
+
+![Hello World!](images/pi.png)
+
+### Cowsay Lorem Ipsum
+
+```
+$ cat lorem.txt | cowsay | hilbertpiet -o images/cowsay.png
+```
+
+![Cowsay Lorem Ipsum](images/cowsay.png)
+
+```
+$ npiet images/cowsay.png
+ _________________________________________
+/ Lorem ipsum dolor sit amet, consectetur \
+| adipiscing elit. Curabitur eu maximus   |
+| enim. Curabitur velit eros, placerat    |
+| sit amet leo vel, pretium tincidunt     |
+| eros. Integer consectetur ante vel      |
+| sapien ullamcorper interdum. Proin in   |
+| porttitor turpis. Donec cursus erat     |
+| quis consectetur hendrerit. Suspendisse |
+| est arcu, hendrerit eu maximus in,      |
+| ultricies non ipsum. Praesent porta     |
+| ornare sem ac euismod. Etiam quis odio  |
+| hendrerit, elementum eros nec,          |
+| scelerisque ex. Class aptent taciti     |
+| sociosqu ad litora torquent per conubia |
+| nostra, per inceptos himenaeos. Mauris  |
+| luctus vel mauris pharetra efficitur.   |
+\ Sed quis porta orci.                    /
+ -----------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 ```
 
 ## How is it done?
@@ -17,7 +65,7 @@ $ hilbertpiet -i 'Hello World!'
 1. Encode input string as a list of Piet operations that push ascii codes to stack and dump them
 back as characters to stdout. 
     ```
-    $ hilbertpiet -i 'Hello World!' -v
+    $ hilbertpiet -i 'Hello World!' -o images/hello_world.png -v
     ...
     Input length = 12
     ...
@@ -60,21 +108,21 @@ with enough iterations to accomodate the codels, using
 4. Map Piet operations onto U-turns of the Hilbert curve, making sure the directional pointer is
 always positioned in a way that the next codel remains on the curve.
     ```
-    $ hilbertpiet -i 'Hello World!'
+    $ hilbertpiet -i 'Hello World!' -o images/hello_world.png
     ...
     2 Hilbert curve iterations
     ```
 
 5. Map the Piet operations printing the string onto the remaining spots of the curve.
     ```
-    $ hilbertpiet -i 'Hello World!'
+    $ hilbertpiet -i 'Hello World!' -o images/hello_world.png
     ...
     403 codels after mapping
     ```
 
 6. Run the resulting Piet operations to get the position and color of each codel.
     ```
-    $ hilbertpiet -i 'Hello World!' -v
+    $ hilbertpiet -i 'Hello World!' -o images/hello_world.png -v
     ...
     # Operation Stack Value Position DP
     Push  [2, 6] 1 (9+0j) 🡺
@@ -139,10 +187,10 @@ Requires Python >= 3.7.
    tox 
    ```
 
-* Run the script
+* Show script usage
     ```
     $ hilbertpiet --help
-    usage: hilbertpiet [-h] [--file INPUT | --input INPUT] [--verbose]
+    usage: hilbertpiet [-h] [--file INPUT | --input INPUT] [--verbose] [--codel-size CODEL_SIZE] [--initial-color INITIAL_COLOR] --out OUT
     
     Generate a Hilbert-curve-shaped Piet program printing a given string
     
@@ -152,8 +200,26 @@ Requires Python >= 3.7.
                             input string file (default stdin)
       --input INPUT, -i INPUT
                             input string (default stdin)
-      --verbose, -v         debug_mode
-  
-    $ hilbertpiet -i 'Hello World!'
-    ...
+      --verbose, -v         debug mode
+      --codel-size CODEL_SIZE, -n CODEL_SIZE
+                            output codel size (default: 20)
+      --initial-color INITIAL_COLOR, -c INITIAL_COLOR
+                            initial color (default: red)
+      --out OUT, -o OUT     output image file
+    ```
+
+* Run the script
+    ```
+    $ hilbertpiet -i 'Hello World!' -o images/hello_world.png
+    Input length = 12
+    Skipping 0 non-ascii characters
+    
+    165 codels before mapping
+    
+    2 Hilbert curve iterations
+    404 codels after mapping
+    
+    Ouput: Hello World!
+    
+    Saving program to images/hello_world.png
     ```
